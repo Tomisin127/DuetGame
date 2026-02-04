@@ -207,7 +207,7 @@ export default function DuetGame() {
       const amountInWei = parseEther(amountInEth.toFixed(18));
 
       console.log('Initiating transaction with builder code attribution...');
-      console.log('Builder Code:', 'bc_dh0rqw67');
+      console.log('Builder Code:', 'bc_p5fu4k4i');
       console.log('Data Suffix:', DATA_SUFFIX);
 
       // Send transaction with ERC-8021 attribution

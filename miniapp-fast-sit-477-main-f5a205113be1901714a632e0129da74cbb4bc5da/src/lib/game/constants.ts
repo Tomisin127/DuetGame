@@ -19,7 +19,7 @@ export const GAME_CONFIG = {
 
 // ERC-8021 Attribution Data Suffix for Builder Code
 export const DATA_SUFFIX = Attribution.toDataSuffix({
-  codes: ['bc_dh0rqw67'],
+  codes: ['bc_p5fu4k4i'],
 });
 
 export const COLORS = {
