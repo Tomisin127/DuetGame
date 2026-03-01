@@ -3,7 +3,10 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Web3Provider } from '@/lib/web3/provider';
 import type { PropsWithChildren } from 'react';
+import { Suspense } from 'react';
 import FarcasterWrapper from "@/components/FarcasterWrapper";
+import { ResponseLogger } from "@/components/response-logger";
+import { ReadyNotifier } from "@/components/ready-notifier";
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -18,14 +21,21 @@ const geistMono = Geist_Mono({
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
         <html lang="en">
+          <head>
+            <meta name="base:app_id" content="693ecf0cd77c069a945bdecd" />
+          </head>
           <body
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
           >
             <Web3Provider>
-      <FarcasterWrapper>
-        {children}
-      </FarcasterWrapper>
-      </Web3Provider>
+              <FarcasterWrapper>
+                <Suspense fallback={null}>
+                  <ResponseLogger />
+                </Suspense>
+                <ReadyNotifier />
+                {children}
+              </FarcasterWrapper>
+            </Web3Provider>
           </body>
         </html>
       );
@@ -48,8 +58,6 @@ export const metadata: Metadata = {
                 "splashBackgroundColor": "#ffffff"
               }
             }
-          }
-          ),
-          "base:app_id": "693ecf0cd77c069a945bdecd"
+          }),
         }
     };

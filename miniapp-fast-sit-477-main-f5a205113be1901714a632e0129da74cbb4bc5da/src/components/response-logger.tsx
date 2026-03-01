@@ -18,8 +18,8 @@ export function ResponseLogger() {
 
         let responseStatus = 200;
 
-        if (window.__NEXT_DATA__?.props?.pageProps?.statusCode) {
-          responseStatus = window.__NEXT_DATA__.props.pageProps.statusCode;
+        if ((window as any).__NEXT_DATA__?.props?.pageProps?.statusCode) {
+          responseStatus = (window as any).__NEXT_DATA__.props.pageProps.statusCode;
         } else if (document.title.includes("404") || pathname === "/404") {
           responseStatus = 404;
         } else if (document.title.includes("500") || pathname === "/500") {

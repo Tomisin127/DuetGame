@@ -1,7 +1,7 @@
 'use client'
 
 import { useConnect, useAccount } from 'wagmi';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useIsInFarcaster } from '@/hooks/useIsInFarcaster';
 import { useBaseAppWallet } from '@/hooks/useBaseAppWallet';
 
@@ -39,7 +39,7 @@ export default function WalletConnectButton() {
         disabled={isPending}
         className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl border-2 border-blue-400 uppercase tracking-wider text-lg transition-all disabled:opacity-50"
       >
-        {isPending ? '🔄 Connecting...' : '🔗 Connect Wallet'}
+        {isPending ? 'Connecting...' : 'Connect Wallet'}
       </button>
 
       {showModal && !isEmbedded && (
