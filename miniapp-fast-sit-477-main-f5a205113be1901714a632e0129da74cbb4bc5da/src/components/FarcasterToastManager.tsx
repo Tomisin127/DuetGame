@@ -42,7 +42,7 @@ export default function FarcasterToastManager({ children }: FarcasterToastManage
       const textToCopy = JSON.stringify(fieldsOnly, null, 2)
       await navigator.clipboard.writeText(textToCopy)
       if (showToast) {
-        toast.success('Account Association JSON copied to clipboard! 📋', {
+        toast.success('Account Association JSON copied to clipboard!', {
           duration: 2000,
         })
       }
@@ -77,7 +77,7 @@ export default function FarcasterToastManager({ children }: FarcasterToastManage
       setCopySucceeded(success)
     })()
     
-    toast.success('Manifest Signed Successfully! 🎉', {
+    toast.success('Manifest Signed Successfully!', {
       description: `Domain: fast-sit-477.app.ohara.ai`,
       duration: 3000,
     })

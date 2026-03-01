@@ -23,14 +23,17 @@ export const DATA_SUFFIX = Attribution.toDataSuffix({
 });
 
 export const COLORS = {
-  BACKGROUND: '#0a0a0f',
-  CIRCLE_1: '#ef4444',
-  CIRCLE_2: '#3b82f6',
+  BACKGROUND: '#050a0f',
+  CIRCLE_1: '#38bdf8', // Sky blue
+  CIRCLE_2: '#2dd4bf', // Teal/Cyan
   OBSTACLE: '#ffffff',
-  OBSTACLE_ACCENT: '#ffffff',
+  OBSTACLE_ACCENT: 'rgba(255, 255, 255, 0.8)',
   HUD_TEXT: '#ffffff',
-  HUD_SECONDARY: '#888888',
-  PULSE_COLOR: '#ec489920',
+  HUD_SECONDARY: '#94a3b8',
+  PULSE_COLOR: '#2dd4bf20',
+  ORBIT_COLOR: '#1e293b',
+  GLOW_PRIMARY: '#2dd4bf',
+  GLOW_SECONDARY: '#38bdf8',
 } as const;
 
 export const AUDIO_TRACKS = [
