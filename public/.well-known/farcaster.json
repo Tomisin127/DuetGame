@@ -9,6 +9,7 @@
     "name": "Duet Circles Adventure",
     "iconUrl": "https://files.catbox.moe/978got.jpg",
     "homeUrl": "https://fast-sit-477.app.ohara.ai",
+    "canonicalDomain": "fast-sit-477.app.ohara.ai",
     "splashImageUrl": "https://usdozf7pplhxfvrl.public.blob.vercel-storage.com/farcaster/splash_images/splash_image1.svg",
     "splashBackgroundColor": "#0a0a0a",
     "subtitle": "On-Chain Survival Game",
@@ -24,6 +25,8 @@
       "eip155:8453"
     ],
     "requiredCapabilities": [
+      "actions.ready",
+      "actions.signIn",
       "wallet.getEthereumProvider"
     ]
   }
