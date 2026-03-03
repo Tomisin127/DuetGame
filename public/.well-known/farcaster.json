@@ -1,0 +1,30 @@
+{
+  "accountAssociation": {
+    "header": "REPLACE_WITH_YOUR_HEADER",
+    "payload": "REPLACE_WITH_YOUR_PAYLOAD",
+    "signature": "REPLACE_WITH_YOUR_SIGNATURE"
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Duet Circles Adventure",
+    "iconUrl": "https://files.catbox.moe/978got.jpg",
+    "homeUrl": "https://fast-sit-477.app.ohara.ai",
+    "splashImageUrl": "https://usdozf7pplhxfvrl.public.blob.vercel-storage.com/farcaster/splash_images/splash_image1.svg",
+    "splashBackgroundColor": "#0a0a0a",
+    "subtitle": "On-Chain Survival Game",
+    "description": "Navigate spinning circles to dodge obstacles in this blockchain mini-game. Requires Base ETH for play.",
+    "primaryCategory": "games",
+    "tags": [
+      "game",
+      "blockchain",
+      "base",
+      "survival"
+    ],
+    "requiredChains": [
+      "eip155:8453"
+    ],
+    "requiredCapabilities": [
+      "wallet.getEthereumProvider"
+    ]
+  }
+}
