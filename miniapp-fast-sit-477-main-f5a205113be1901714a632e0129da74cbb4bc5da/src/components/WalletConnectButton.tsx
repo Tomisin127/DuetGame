@@ -2,34 +2,29 @@
 
 import { useConnect, useAccount } from 'wagmi';
 import { useState } from 'react';
-import { useIsInFarcaster } from '@/hooks/useIsInFarcaster';
 import { useBaseAppWallet } from '@/hooks/useBaseAppWallet';
 
 export default function WalletConnectButton() {
   const { connect, connectors, isPending } = useConnect();
   const { isConnected } = useAccount();
   const [showModal, setShowModal] = useState<boolean>(false);
-  const isInFarcaster = useIsInFarcaster();
   const { isBaseApp } = useBaseAppWallet();
-  
-  // Detect if we're in an embedded environment
-  const isEmbedded = isInFarcaster || isBaseApp;
 
   if (isConnected) {
     return null; // Don't show button when connected
   }
 
   const handleConnect = () => {
-    // In embedded environments (BaseApp/Farcaster), auto-connect with injected wallet
-    if (isEmbedded) {
-      const injectedConnector = connectors.find(c => c.id === 'injected' || c.id === 'coinbaseWallet');
-      if (injectedConnector) {
-        connect({ connector: injectedConnector });
+    // In Base App environment, auto-connect with injected wallet
+    if (isBaseApp) {
+      const baseAccountConnector = connectors.find(c => c.id === 'baseAccount');
+      if (baseAccountConnector) {
+        connect({ connector: baseAccountConnector });
+        return;
       }
-    } else {
-      // In normal browsers, show the full wallet selection modal
-      setShowModal(true);
     }
+    // Otherwise show the full wallet selection modal
+    setShowModal(true);
   };
 
   return (
@@ -42,7 +37,7 @@ export default function WalletConnectButton() {
         {isPending ? 'Connecting...' : 'Connect Wallet'}
       </button>
 
-      {showModal && !isEmbedded && (
+      {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowModal(false)}>
           <div className="bg-zinc-900 border-2 border-zinc-700 rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">

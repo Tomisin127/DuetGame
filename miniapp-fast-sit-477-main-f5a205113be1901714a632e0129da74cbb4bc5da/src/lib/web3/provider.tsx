@@ -4,13 +4,14 @@ import { type ReactNode } from 'react';
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { injected, coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors';
+import { injected, coinbaseWallet, metaMask, walletConnect, baseAccount } from 'wagmi/connectors';
 
-// Simple wagmi config without RainbowKit - perfect for BaseApp and Farcaster
+// Simple wagmi config for Base App standard web apps
 const config = createConfig({
   chains: [base],
   connectors: [
-    injected(), // For BaseApp, Farcaster, and other injected wallets
+    baseAccount(), // Base App standard connector for web apps
+    injected(), // For Base App injected wallet and other injected wallets
     coinbaseWallet({
       appName: 'Duet Game',
       preference: 'smartWalletOnly', // Use Coinbase Smart Wallet (keys.coinbase.com)
