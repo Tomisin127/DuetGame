@@ -494,7 +494,7 @@ export default function DuetGame() {
             <p className="text-xs md:text-sm font-medium text-gray-400 uppercase tracking-widest">
               On-Chain Survival Game
             </p>
-          </div>
+
             {gameStateRef.current.highScore > 0 && (
               <div className="mt-8 text-center border-t border-gray-800 pt-8">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-2">Personal Best</p>
