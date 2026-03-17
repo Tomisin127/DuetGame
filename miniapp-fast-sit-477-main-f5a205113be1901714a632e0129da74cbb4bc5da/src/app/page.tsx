@@ -20,74 +20,12 @@ import ControlsGuide from '@/components/game/ControlsGuide';
 import WalletDisplay from '@/components/game/WalletDisplay';
 import StyledButton from '@/components/game/StyledButton';
 import WalletConnectButton from '@/components/WalletConnectButton';
-import { sdk } from "@farcaster/miniapp-sdk";
-import { useAddMiniApp } from "@/hooks/useAddMiniApp";
-import { useQuickAuth } from "@/hooks/useQuickAuth";
-import { useIsInFarcaster } from "@/hooks/useIsInFarcaster";
 import { useBaseAppWallet } from "@/hooks/useBaseAppWallet";
 
 const MINIMUM_USD_REQUIRED = 0.0001;
 const GAME_FEE_RECIPIENT = '0xEA549e458e77Fd93bf330e5EAEf730c50d8F5249';
 
 export default function DuetGame() {
-    const { addMiniApp } = useAddMiniApp();
-    const isInFarcaster = useIsInFarcaster()
-    useQuickAuth(isInFarcaster)
-    useEffect(() => {
-      const tryAddMiniApp = async () => {
-        try {
-          await addMiniApp()
-        } catch (error) {
-          console.error('Failed to add mini app:', error)
-        }
-
-      }
-
-    
-
-      tryAddMiniApp()
-    }, [addMiniApp])
-    useEffect(() => {
-      const initializeFarcaster = async () => {
-        try {
-          await new Promise(resolve => setTimeout(resolve, 100))
-          
-          if (document.readyState !== 'complete') {
-            await new Promise<void>(resolve => {
-              if (document.readyState === 'complete') {
-                resolve()
-              } else {
-                window.addEventListener('load', () => resolve(), { once: true })
-              }
-
-            })
-          }
-
-    
-
-          await sdk.actions.ready()
-          console.log('Farcaster SDK initialized successfully - app fully loaded')
-        } catch (error) {
-          console.error('Failed to initialize Farcaster SDK:', error)
-          
-          setTimeout(async () => {
-            try {
-              await sdk.actions.ready()
-              console.log('Farcaster SDK initialized on retry')
-            } catch (retryError) {
-              console.error('Farcaster SDK retry failed:', retryError)
-            }
-
-          }, 1000)
-        }
-
-      }
-
-    
-
-      initializeFarcaster()
-    }, [])
-  
   const { address, isConnected, chain } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
@@ -523,16 +461,6 @@ export default function DuetGame() {
       });
     };
   }, []);
-
-  // Auto-connect wallet in embedded environments
-  useEffect(() => {
-    if ((isInFarcaster || isBaseApp) && !isConnected) {
-      const timer = setTimeout(() => {
-        autoConnect();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isInFarcaster, isBaseApp, isConnected, autoConnect]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 relative overflow-hidden">
