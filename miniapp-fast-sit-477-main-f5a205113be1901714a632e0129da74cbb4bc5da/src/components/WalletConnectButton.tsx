@@ -32,25 +32,25 @@ export default function WalletConnectButton() {
       <button
         onClick={handleConnect}
         disabled={isPending}
-        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl border-2 border-blue-400 uppercase tracking-wider text-lg transition-all disabled:opacity-50"
+        className="bg-white text-black hover:bg-gray-200 active:bg-gray-300 font-medium px-12 py-5 border border-white shadow-sm uppercase tracking-widest text-lg transition-smooth disabled:opacity-40"
       >
         {isPending ? 'Connecting...' : 'Connect Wallet'}
       </button>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowModal(false)}>
-          <div className="bg-zinc-900 border-2 border-zinc-700 rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)}>
+          <div className="bg-black border border-white p-8 max-w-md w-full mx-4 shadow-lg animate-fade-in" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-white">Connect Wallet</h3>
+              <h3 className="text-lg font-medium text-white uppercase tracking-widest">Select Wallet</h3>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-zinc-400 hover:text-white text-3xl leading-none"
+                className="text-gray-400 hover:text-white text-2xl leading-none"
               >
                 ×
               </button>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-2 divide-y divide-gray-800">
               {connectors.map((connector) => (
                 <button
                   key={connector.id}
@@ -59,15 +59,16 @@ export default function WalletConnectButton() {
                     setShowModal(false);
                   }}
                   disabled={isPending}
-                  className="w-full bg-zinc-800 hover:bg-zinc-700 border-2 border-zinc-600 rounded-xl px-6 py-4 text-white font-semibold transition-all disabled:opacity-50 text-left flex items-center gap-3"
+                  className="w-full bg-black hover:bg-gray-900 border border-gray-800 hover:border-white px-6 py-4 text-white font-medium transition-smooth disabled:opacity-40 text-left flex items-center gap-3"
                 >
-                  <span className="text-xl">
+                  <span className="text-lg">
                     {connector.name.includes('MetaMask') ? '🦊' : 
-                     connector.name.includes('Coinbase') ? '🔵' :
+                     connector.name.includes('Coinbase') ? '⭐' :
                      connector.name.includes('Rainbow') ? '🌈' :
-                     connector.name.includes('WalletConnect') ? '🔗' : '👛'}
+                     connector.name.includes('WalletConnect') ? '🔗' :
+                     connector.name.includes('baseAccount') ? '⛓️' : '👛'}
                   </span>
-                  <span>{connector.name}</span>
+                  <span className="text-sm">{connector.name}</span>
                 </button>
               ))}
             </div>

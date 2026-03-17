@@ -477,31 +477,28 @@ export default function DuetGame() {
       {isConnected && gameStatus !== 'playing' && (
         <button
           onClick={() => disconnect()}
-          className="fixed top-4 right-4 z-50 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-1.5 shadow-lg hover:bg-zinc-800 hover:border-zinc-600 transition-all text-white text-sm font-semibold uppercase tracking-wide"
+          className="fixed top-6 right-6 z-50 bg-black border border-white px-4 py-2 text-white text-xs font-medium uppercase tracking-widest hover:bg-white hover:text-black transition-smooth"
           title="Disconnect Wallet"
         >
-          🚪 Logout
+          Disconnect
         </button>
       )}
 
       {gameStatus === 'menu' && (
-        <div className="flex flex-col items-center gap-8 z-10 px-4">
-          <div className="text-center">
-            <div className="relative mb-6">
-              <div className="absolute inset-0 bg-zinc-600 blur-3xl opacity-30 animate-pulse" />
-              <h1 className="relative text-7xl md:text-9xl font-black text-white tracking-wider drop-shadow-2xl">
-                DUET
-              </h1>
-            </div>
-            <div className="bg-zinc-800 text-zinc-300 px-6 py-3 rounded-2xl shadow-2xl border-2 border-zinc-700 backdrop-blur-sm">
-              <p className="text-xl md:text-2xl font-bold uppercase tracking-widest">
-                On-Chain Survival Game
-              </p>
-            </div>
+        <div className="flex flex-col items-center justify-center gap-12 z-10 px-4 min-h-screen">
+          <div className="text-center animate-fade-in">
+            <h1 className="text-8xl md:text-9xl font-light text-white tracking-tight mb-4">
+              DUET
+            </h1>
+            <div className="h-px bg-white opacity-40 w-32 mx-auto mb-6" />
+            <p className="text-xs md:text-sm font-medium text-gray-400 uppercase tracking-widest">
+              On-Chain Survival Game
+            </p>
+          </div>
             {gameStateRef.current.highScore > 0 && (
-              <div className="mt-6 bg-zinc-800/80 backdrop-blur-md border-2 border-zinc-600 rounded-2xl px-8 py-4 shadow-2xl">
-                <p className="text-zinc-400 text-sm uppercase tracking-wider mb-1">Personal Best</p>
-                <p className="text-white text-4xl md:text-5xl font-black drop-shadow-lg">
+              <div className="mt-8 text-center border-t border-gray-800 pt-8">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-2">Personal Best</p>
+                <p className="text-5xl md:text-6xl font-light text-white">
                   {gameStateRef.current.highScore}
                 </p>
               </div>
@@ -509,20 +506,17 @@ export default function DuetGame() {
           </div>
 
           {balanceError && (
-            <div className="bg-red-950/80 backdrop-blur-md border-2 border-red-800 rounded-2xl px-8 py-5 max-w-md shadow-2xl animate-pulse">
-              <div className="flex items-center gap-3">
-                <div className="text-3xl">⚠️</div>
-                <p className="text-red-200 font-bold text-lg">{balanceError}</p>
-              </div>
+            <div className="bg-red-900/30 backdrop-blur-md border border-red-700 px-6 py-4 max-w-md shadow-sm animate-fade-in">
+              <p className="text-red-300 text-sm font-medium text-center">{balanceError}</p>
             </div>
           )}
 
-          <div className="flex flex-col gap-6 items-center">
+          <div className="flex flex-col gap-8 items-center mt-8">
             {!isConnected ? (
               <div className="flex flex-col items-center gap-4">
                 <WalletConnectButton />
-                <p className="text-zinc-400 text-sm text-center max-w-md">
-                  Connect your Base wallet to play. You'll need $0.0001 USD in ETH.
+                <p className="text-gray-400 text-xs text-center max-w-md uppercase tracking-widest font-light">
+                  Connect your Base wallet. Entry fee: ${MINIMUM_USD_REQUIRED.toFixed(4)} USD ETH
                 </p>
               </div>
             ) : (
@@ -533,33 +527,26 @@ export default function DuetGame() {
                 size="xl"
               >
                 {isConfirmingTransaction
-                  ? '⛓️ Confirming on-chain...'
+                  ? 'Confirming transaction...'
                   : gameStateRef.current.isTransactionPending
-                  ? '⏳ Sign in wallet...'
+                  ? 'Sign in wallet...'
                   : isCheckingBalance
-                  ? '🔍 Checking...'
-                  : '🎮 Start Game'}
+                  ? 'Checking balance...'
+                  : 'Start Game'}
               </StyledButton>
             )}
 
-            <div className="bg-zinc-900/80 backdrop-blur-md border-2 border-zinc-700 rounded-2xl p-6 shadow-2xl max-w-md">
-              <div className="text-zinc-300 text-sm text-center space-y-3">
-                <p className="text-white font-bold text-base uppercase tracking-wider mb-3">
-                  💡 How to Play
-                </p>
-                <div className="space-y-2 text-zinc-200">
-                  <p className="font-medium">🎯 <span className="text-white">Hold left/right side of screen</span> to rotate orbs</p>
-                  <p className="font-medium">⚠️ <span className="text-white">Avoid white squares</span> or game over!</p>
-                  <p className="text-xs text-zinc-400 mt-3">(Desktop: Use Arrow Keys or A/D)</p>
+            <div className="max-w-md border border-gray-800 pt-8 mt-4">
+              <div className="text-gray-400 text-xs text-center space-y-4">
+                <div>
+                  <p className="font-medium text-white mb-1 uppercase tracking-widest">Controls</p>
+                  <p className="text-xs font-light">Hold left/right side of screen to rotate</p>
                 </div>
-                <div className="mt-4 pt-4 border-t border-zinc-700">
-                  <p className="text-xs text-zinc-400">
-                    Entry fee: <span className="text-emerald-400 font-bold">${MINIMUM_USD_REQUIRED.toFixed(3)} USD</span>
-                  </p>
-                  <p className="text-xs text-zinc-400 mt-1">
-                    in Base ETH per game
-                  </p>
+                <div>
+                  <p className="font-medium text-white mb-1 uppercase tracking-widest">Objective</p>
+                  <p className="text-xs font-light">Avoid the white obstacles to advance</p>
                 </div>
+                <p className="text-xs text-gray-500 font-light pt-2">(Desktop: Arrow Keys or A/D)</p>
               </div>
             </div>
           </div>
@@ -586,12 +573,10 @@ export default function DuetGame() {
 
           <button
             onClick={() => setAudioEnabled(!audioEnabled)}
-            className="fixed bottom-4 left-4 z-40 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-full p-3 shadow-lg hover:bg-zinc-800 transition-all"
+            className="fixed bottom-6 left-6 z-40 bg-black border border-white px-4 py-3 text-white text-sm font-medium uppercase tracking-widest hover:bg-white hover:text-black transition-smooth"
             title={audioEnabled ? 'Mute Audio' : 'Unmute Audio'}
           >
-            <span className="text-2xl">
-              {audioEnabled ? '🔊' : '🔇'}
-            </span>
+            {audioEnabled ? 'Sound On' : 'Sound Off'}
           </button>
 
           <MobileControls
@@ -606,28 +591,28 @@ export default function DuetGame() {
       )}
 
       {gameStatus === 'gameOver' && (
-        <div className="flex flex-col items-center gap-8 z-10 px-4">
-          <div className="text-center">
-            <div className="relative mb-6">
-              <div className="absolute inset-0 bg-red-900 blur-3xl opacity-40 animate-pulse" />
-              <h2 className="relative text-6xl md:text-8xl font-black text-white tracking-wider drop-shadow-2xl">
-                GAME OVER
-              </h2>
-            </div>
+        <div className="flex flex-col items-center justify-center gap-12 z-10 px-4">
+          <div className="text-center animate-fade-in">
+            <h2 className="text-5xl md:text-7xl font-light text-white tracking-wider mb-2">
+              GAME OVER
+            </h2>
+            <div className="h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-30 my-8" />
             
-            <div className="bg-zinc-800/80 backdrop-blur-md border-2 border-zinc-600 rounded-2xl px-12 py-8 shadow-2xl mb-4">
-              <p className="text-zinc-400 text-lg uppercase tracking-wider mb-2">Final Score</p>
-              <p className="text-white text-6xl md:text-7xl font-black drop-shadow-2xl">
+            <div className="mt-12">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-3">Score</p>
+              <p className="text-6xl md:text-7xl font-light text-white tabular-nums">
                 {gameStateRef.current.score}
               </p>
             </div>
             
-            <div className="bg-zinc-800/80 backdrop-blur-md border-2 border-zinc-600 rounded-2xl px-8 py-4 shadow-2xl">
-              <p className="text-zinc-400 text-sm uppercase tracking-wider">Best Score</p>
-              <p className="text-white text-3xl font-bold">
-                {gameStateRef.current.highScore}
-              </p>
-            </div>
+            {gameStateRef.current.highScore > gameStateRef.current.score && (
+              <div className="mt-8 text-gray-400">
+                <p className="text-xs font-medium uppercase tracking-widest mb-2">Best Score</p>
+                <p className="text-2xl font-light text-gray-300">
+                  {gameStateRef.current.highScore}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
@@ -638,10 +623,10 @@ export default function DuetGame() {
               size="lg"
             >
               {isConfirmingTransaction
-                ? '⛓️ Confirming...'
+                ? 'Confirming...'
                 : gameStateRef.current.isTransactionPending
-                ? '⏳ Sign in wallet...'
-                : '🔄 Play Again'}
+                ? 'Signing...'
+                : 'Play Again'}
             </StyledButton>
             
             <StyledButton
@@ -649,7 +634,7 @@ export default function DuetGame() {
               variant="outline"
               size="lg"
             >
-              🏠 Menu
+              Menu
             </StyledButton>
           </div>
         </div>

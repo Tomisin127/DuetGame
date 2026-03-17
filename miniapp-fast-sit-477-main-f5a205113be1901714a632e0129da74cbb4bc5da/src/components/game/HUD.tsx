@@ -12,25 +12,26 @@ interface HUDProps {
 
 const HUD: FC<HUDProps> = ({ score, highScore, elapsedTime, difficulty }) => {
   return (
-    <div className="fixed top-2 left-1/2 -translate-x-1/2 flex gap-2 z-20 px-2">
-      <div className="bg-zinc-900/90 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-1.5 shadow-lg min-w-[70px]">
-        <div className="text-zinc-400 text-[10px] uppercase tracking-wide">Score</div>
-        <div className="text-white text-lg font-bold drop-shadow">{score}</div>
+    <div className="fixed top-8 left-1/2 -translate-x-1/2 z-20 px-4">
+      <div className="flex gap-8 md:gap-12">
+        <div className="text-center">
+          <div className="text-[10px] md:text-xs font-medium text-gray-400 uppercase tracking-widest mb-1">Score</div>
+          <div className="text-3xl md:text-4xl font-light text-white tabular-nums">{score}</div>
+        </div>
+        
+        <div className="text-center border-l border-r border-gray-700 px-8 md:px-12">
+          <div className="text-[10px] md:text-xs font-medium text-gray-400 uppercase tracking-widest mb-1">Time</div>
+          <div className="text-3xl md:text-4xl font-light text-white tabular-nums">{formatTime(elapsedTime)}</div>
+        </div>
+
+        <div className="text-center">
+          <div className="text-[10px] md:text-xs font-medium text-gray-400 uppercase tracking-widest mb-1">Level</div>
+          <div className="text-3xl md:text-4xl font-light text-white tabular-nums">{difficulty + 1}</div>
+        </div>
       </div>
       
-      <div className="bg-zinc-900/90 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-1.5 shadow-lg min-w-[70px]">
-        <div className="text-zinc-400 text-[10px] uppercase tracking-wide">Time</div>
-        <div className="text-white text-lg font-bold drop-shadow">{formatTime(elapsedTime)}</div>
-      </div>
-
-      <div className="bg-zinc-900/90 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-1.5 shadow-lg min-w-[70px]">
-        <div className="text-zinc-400 text-[10px] uppercase tracking-wide">Level</div>
-        <div className="text-white text-lg font-bold drop-shadow">{difficulty + 1}</div>
-      </div>
-
-      <div className="bg-zinc-900/90 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-1.5 shadow-lg min-w-[70px]">
-        <div className="text-zinc-400 text-[10px] uppercase tracking-wide">Best</div>
-        <div className="text-white text-lg font-bold drop-shadow">{highScore}</div>
+      <div className="text-center mt-6 text-xs text-gray-500 uppercase tracking-widest font-light">
+        Best: <span className="text-white font-medium ml-1">{highScore}</span>
       </div>
     </div>
   );

@@ -29,6 +29,6 @@ export default function RootLayout({ children }: PropsWithChildren) {
 }
 
 export const metadata: Metadata = {
-  title: "Duet Circles Adventure",
-  description: "Navigate spinning circles to dodge obstacles in this blockchain mini-game. Cinematic audio syncs with pulsing visuals. Requires Base ETH for play. Seamless mobile-friendly experience.",
+  title: "DUET - On-Chain Survival Game",
+  description: "A minimalist, high-intensity survival game on Base blockchain. Rotate to dodge obstacles and climb the leaderboard. On-chain entry fees, pure skill-based gameplay.",
 };
