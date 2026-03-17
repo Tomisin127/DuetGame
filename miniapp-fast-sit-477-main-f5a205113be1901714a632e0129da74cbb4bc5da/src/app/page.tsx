@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useAccount, useConnect, useDisconnect, useSwitchChain, useBalance, useSendCalls } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useSwitchChain, useBalance, useSendCalls, useCallsStatus } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { formatEther, parseEther } from 'viem';
 import { useWalletClient } from 'wagmi';
@@ -100,6 +100,15 @@ export default function DuetGame() {
   });
   
   const [pendingCallsId, setPendingCallsId] = useState<string | null>(null);
+  const [isConfirmingTransaction, setIsConfirmingTransaction] = useState<boolean>(false);
+  
+  const { data: callsStatus } = useCallsStatus({
+    id: pendingCallsId || '',
+    query: {
+      enabled: !!pendingCallsId,
+      refetchInterval: 1000, // Check every 1 second
+    },
+  });
   
   const [gameStatus, setGameStatus] = useState<GameStatus>('menu');
   const [pulseIntensity, setPulseIntensity] = useState<number>(0);
@@ -192,8 +201,8 @@ export default function DuetGame() {
     }
   };
 
-  const sendGameTransaction = async (): Promise<boolean> => {
-    if (!address) return false;
+  const sendGameTransaction = async (): Promise<string | null> => {
+    if (!address) return null;
 
     try {
       // Switch to Base chain if not already on it
@@ -232,7 +241,7 @@ export default function DuetGame() {
       console.log('Calls ID:', callsId);
       console.log('Builder attribution successfully attached to transaction');
       
-      return true;
+      return callsId;
     } catch (error: unknown) {
       console.error('❌ Transaction error:', error);
       
@@ -248,39 +257,16 @@ export default function DuetGame() {
         setBalanceError('Transaction failed. Please try again.');
       }
       
-      return false;
+      return null;
     }
   };
 
-  const startGame = async (): Promise<void> => {
-    if (!isConnected) {
-      setBalanceError('Please connect your wallet to play');
-      return;
-    }
-
-    // Check balance
-    const hasBalance = await checkBalance();
-    if (!hasBalance) return;
-
-    // Set transaction pending state - wallet will popup for signature
-    gameStateRef.current.isTransactionPending = true;
-    setBalanceError('⏳ Please sign the transaction in your wallet...');
-    forceUpdate((n) => n + 1);
-
-    // Wait for user to sign the transaction
-    // The wallet modal will appear and block until user signs or rejects
-    const txSuccess = await sendGameTransaction();
-    
-    // If transaction failed or was rejected, stop here
-    if (!txSuccess) {
-      gameStateRef.current.isTransactionPending = false;
-      forceUpdate((n) => n + 1);
-      return;
-    }
-
-    // Transaction successfully signed! Now start the game
-    console.log('🎮 Transaction confirmed - Starting game...');
+  const startGameAfterConfirmation = useCallback((): void => {
+    // Transaction successfully confirmed on-chain! Now start the game
+    console.log('🎮 Transaction confirmed on-chain - Starting game...');
     setAudioEnabled(true);
+    setPendingCallsId(null);
+    setIsConfirmingTransaction(false);
 
     gameStateRef.current = {
       ...gameStateRef.current,
@@ -301,6 +287,56 @@ export default function DuetGame() {
     setGameStatus('playing');
     setElapsedTime(0);
     setBalanceError('');
+  }, []);
+
+  // Monitor transaction confirmation status
+  useEffect(() => {
+    if (!pendingCallsId) return;
+
+    if (callsStatus?.status === 'CONFIRMED') {
+      startGameAfterConfirmation();
+    } else if (callsStatus?.status === 'FAILED') {
+      setBalanceError('Transaction failed. Please try again.');
+      setPendingCallsId(null);
+      setIsConfirmingTransaction(false);
+      gameStateRef.current.isTransactionPending = false;
+      forceUpdate((n) => n + 1);
+    }
+  }, [callsStatus, pendingCallsId, startGameAfterConfirmation]);
+
+  const startGame = async (): Promise<void> => {
+    if (!isConnected) {
+      setBalanceError('Please connect your wallet to play');
+      return;
+    }
+
+    // Check balance
+    const hasBalance = await checkBalance();
+    if (!hasBalance) return;
+
+    // Set transaction pending state - wallet will popup for signature
+    gameStateRef.current.isTransactionPending = true;
+    setBalanceError('⏳ Please sign the transaction in your wallet...');
+    setIsConfirmingTransaction(false);
+    forceUpdate((n) => n + 1);
+
+    // Wait for user to sign the transaction
+    // The wallet modal will appear and block until user signs or rejects
+    const callsId = await sendGameTransaction();
+    
+    // If transaction failed or was rejected, stop here
+    if (!callsId) {
+      gameStateRef.current.isTransactionPending = false;
+      setIsConfirmingTransaction(false);
+      forceUpdate((n) => n + 1);
+      return;
+    }
+
+    // Transaction signed! Now wait for on-chain confirmation
+    console.log('✅ Transaction signed. Waiting for on-chain confirmation...');
+    setBalanceError('⏳ Confirming transaction on-chain...');
+    setIsConfirmingTransaction(true);
+    setPendingCallsId(callsId);
   };
 
   const endGame = useCallback((): void => {
@@ -564,12 +600,14 @@ export default function DuetGame() {
             ) : (
               <StyledButton
                 onClick={startGame}
-                disabled={isCheckingBalance || gameStateRef.current.isTransactionPending}
+                disabled={isCheckingBalance || gameStateRef.current.isTransactionPending || isConfirmingTransaction}
                 variant="primary"
                 size="xl"
               >
-                {gameStateRef.current.isTransactionPending
-                  ? '⏳ Starting...'
+                {isConfirmingTransaction
+                  ? '⛓️ Confirming on-chain...'
+                  : gameStateRef.current.isTransactionPending
+                  ? '⏳ Sign in wallet...'
                   : isCheckingBalance
                   ? '🔍 Checking...'
                   : '🎮 Start Game'}
@@ -667,12 +705,14 @@ export default function DuetGame() {
           <div className="flex flex-col sm:flex-row gap-4">
             <StyledButton
               onClick={startGame}
-              disabled={isCheckingBalance || gameStateRef.current.isTransactionPending}
+              disabled={isCheckingBalance || gameStateRef.current.isTransactionPending || isConfirmingTransaction}
               variant="primary"
               size="lg"
             >
-              {gameStateRef.current.isTransactionPending
-                ? '⏳ Starting...'
+              {isConfirmingTransaction
+                ? '⛓️ Confirming...'
+                : gameStateRef.current.isTransactionPending
+                ? '⏳ Sign in wallet...'
                 : '🔄 Play Again'}
             </StyledButton>
             
