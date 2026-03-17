@@ -463,10 +463,7 @@ export default function DuetGame() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(63,63,70,0.3),transparent_60%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(82,82,91,0.2),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(39,39,42,0.2),transparent_50%)]" />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black relative overflow-hidden">
       
       <AudioManager
         isPlaying={gameStatus === 'playing' && audioEnabled}
@@ -640,15 +637,7 @@ export default function DuetGame() {
         </div>
       )}
 
-      <div className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute inset-0 bg-gradient-radial from-zinc-600/20 via-zinc-700/10 to-transparent"
-          style={{
-            opacity: pulseIntensity,
-            transition: 'opacity 0.2s ease-out',
-          }}
-        />
-      </div>
+
     </div>
   );
 }
