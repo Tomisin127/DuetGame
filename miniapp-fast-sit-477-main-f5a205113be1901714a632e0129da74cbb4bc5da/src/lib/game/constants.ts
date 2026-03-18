@@ -1,5 +1,3 @@
-import { Attribution } from 'ox/erc8021';
-
 export const GAME_CONFIG = {
   CANVAS_WIDTH: 800,
   CANVAS_HEIGHT: 600,
@@ -17,10 +15,9 @@ export const GAME_CONFIG = {
   ROTATION_SPEED: 0.06,
 } as const;
 
-// ERC-8021 Attribution Data Suffix for Builder Code
-export const DATA_SUFFIX = Attribution.toDataSuffix({
-  codes: ['bc_p5fu4k4i'],
-});
+// ERC-8021 Attribution Data Suffix for Builder Code (bc_p5fu4k4i)
+// Format: 0x<attribution_header><builder_codes>
+export const DATA_SUFFIX = '0x0084626370';
 
 export const COLORS = {
   BACKGROUND: '#050a0f',
