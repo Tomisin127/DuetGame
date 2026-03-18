@@ -230,12 +230,16 @@ export default function DuetGame() {
   useEffect(() => {
     if (!pendingCallsId) return;
 
+    console.log('[v0] Calls status update:', { pendingCallsId, status: callsStatus?.status, fullStatus: callsStatus });
+
     // Handle confirmed transaction - check for both uppercase and lowercase variants
     if (callsStatus?.status === 'CONFIRMED' || callsStatus?.status === 'confirmed') {
+      console.log('[v0] Transaction confirmed! Starting game');
       startGameAfterConfirmation();
     }
     // Handle failed transaction
     else if (callsStatus?.status === 'FAILED' || callsStatus?.status === 'failed') {
+      console.log('[v0] Transaction failed');
       setBalanceError('Transaction failed. Please try again.');
       setPendingCallsId(null);
       setIsConfirmingTransaction(false);
@@ -245,6 +249,7 @@ export default function DuetGame() {
   }, [callsStatus, pendingCallsId, startGameAfterConfirmation]);
 
   const startGame = async (): Promise<void> => {
+    console.log('[v0] startGame called');
     if (!isConnected) {
       setBalanceError('Please connect your wallet to play');
       return;
@@ -252,6 +257,7 @@ export default function DuetGame() {
 
     // Check balance
     const hasBalance = await checkBalance();
+    console.log('[v0] Balance check:', hasBalance);
     if (!hasBalance) return;
 
     // Set transaction pending state - wallet will popup for signature
@@ -261,10 +267,13 @@ export default function DuetGame() {
     forceUpdate((n) => n + 1);
 
     // Wait for user to sign the transaction
+    console.log('[v0] Sending transaction...');
     const callsId = await sendGameTransaction();
+    console.log('[v0] Transaction sent, callsId:', callsId);
     
     // If transaction failed or was rejected, stop here
     if (!callsId) {
+      console.log('[v0] No callsId returned, stopping');
       gameStateRef.current.isTransactionPending = false;
       setIsConfirmingTransaction(false);
       forceUpdate((n) => n + 1);
@@ -272,6 +281,7 @@ export default function DuetGame() {
     }
 
     // Transaction signed! Now wait for on-chain confirmation
+    console.log('[v0] Setting pending calls id:', callsId);
     setBalanceError('⏳ Confirming transaction on-chain...');
     setIsConfirmingTransaction(true);
     setPendingCallsId(callsId);
