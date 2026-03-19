@@ -3,6 +3,20 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Prevent wagmi connectors and WalletConnect packages from being bundled
+  // on the server — they access indexedDB at import time which crashes in Node.js.
+  // This is the Next.js 15 official API replacing the old webpack externals approach.
+  serverExternalPackages: [
+    'wagmi',
+    'wagmi/connectors',
+    '@wagmi/core',
+    '@wagmi/connectors',
+    '@walletconnect/core',
+    '@walletconnect/sign-client',
+    '@walletconnect/universal-provider',
+    '@walletconnect/ethereum-provider',
+    '@coinbase/wallet-sdk',
+  ],
   images: {
     remotePatterns: [
       {
@@ -10,36 +24,6 @@ const nextConfig = {
         hostname: 'ohara-assets.s3.us-east-2.amazonaws.com',
       },
     ],
-  },
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      // Prevent WalletConnect/wagmi browser-only modules from being bundled on server
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        '@react-native-async-storage/async-storage': false,
-        'pino-pretty': false,
-        'lokijs': false,
-        'indexeddb-js': false,
-        'indexedDB': false,
-      };
-      // Externalize walletconnect and coinbaseWallet packages on the server —
-      // these all access indexedDB at import time which crashes in Node.js
-      const SSR_EXTERNAL_PATTERNS = [
-        '@walletconnect',
-        '@coinbase/wallet-sdk',
-        '@metamask',
-      ];
-      config.externals = [
-        ...(Array.isArray(config.externals) ? config.externals : []),
-        ({ request }, callback) => {
-          if (request && SSR_EXTERNAL_PATTERNS.some((p) => request.includes(p))) {
-            return callback(null, 'commonjs ' + request);
-          }
-          callback();
-        },
-      ];
-    }
-    return config;
   },
 };
 
