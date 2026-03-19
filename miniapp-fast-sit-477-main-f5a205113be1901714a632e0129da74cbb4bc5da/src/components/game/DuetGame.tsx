@@ -1,0 +1,426 @@
+'use client'
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useAccount, useConnect, useDisconnect, useSwitchChain, useBalance, useSendCalls, useCallsStatus } from 'wagmi';
+import { base } from 'wagmi/chains';
+import { formatEther, parseEther } from 'viem';
+import { useWalletClient } from 'wagmi';
+import type { GameState, GameStatus } from '@/types/game';
+import { GAME_CONFIG, COLORS, DATA_SUFFIX } from '@/lib/game/constants';
+import {
+  checkCollision,
+  spawnObstacle,
+  calculateDifficulty,
+} from '@/lib/game/utils';
+import GameCanvas from '@/components/game/GameCanvas';
+import HUD from '@/components/game/HUD';
+import MobileControls from '@/components/game/MobileControls';
+import AudioManager from '@/components/game/AudioManager';
+import ControlsGuide from '@/components/game/ControlsGuide';
+import StyledButton from '@/components/game/StyledButton';
+import WalletConnectButton from '@/components/WalletConnectButton';
+import { useBaseAppWallet } from '@/hooks/useBaseAppWallet';
+
+const MINIMUM_USD_REQUIRED = 0.0001;
+const GAME_FEE_RECIPIENT = '0xEA549e458e77Fd93bf330e5EAEf730c50d8F5249';
+
+export default function DuetGame() {
+  const { address, isConnected, chain } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
+  const { switchChain } = useSwitchChain();
+  const { data: walletClient } = useWalletClient();
+  const { sendCalls } = useSendCalls();
+  const { data: balanceData } = useBalance({
+    address: address,
+    chainId: base.id,
+  });
+
+  const [pendingCallsId, setPendingCallsId] = useState<string | null>(null);
+  const [isConfirmingTransaction, setIsConfirmingTransaction] = useState<boolean>(false);
+
+  const { data: callsStatus } = useCallsStatus({
+    id: pendingCallsId || undefined,
+    query: {
+      enabled: !!pendingCallsId,
+      refetchInterval: pendingCallsId ? 1000 : undefined,
+    },
+  });
+
+  const [gameStatus, setGameStatus] = useState<GameStatus>('menu');
+  const [pulseIntensity, setPulseIntensity] = useState<number>(0);
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
+  const [isCheckingBalance, setIsCheckingBalance] = useState<boolean>(false);
+  const [balanceError, setBalanceError] = useState<string>('');
+  const [ethPrice, setEthPrice] = useState<number>(2500);
+  const [audioEnabled, setAudioEnabled] = useState<boolean>(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const { isBaseApp } = useBaseAppWallet();
+
+  const gameStateRef = useRef<GameState>({
+    isPlaying: false,
+    isPaused: false,
+    score: 0,
+    highScore: 0,
+    difficulty: 0,
+    startTime: 0,
+    obstacles: [],
+    circles: [
+      { angle: 0, direction: 'cw', color: COLORS.CIRCLE_1 },
+      { angle: Math.PI, direction: 'cw', color: COLORS.CIRCLE_2 },
+    ],
+    isTransactionPending: false,
+    lastObstacleSpawn: 0,
+  });
+
+  const [, forceUpdate] = useState<number>(0);
+  const animationFrameRef = useRef<number>(0);
+  const lastFrameTimeRef = useRef<number>(0);
+  const leftControlActive = useRef<boolean>(false);
+  const rightControlActive = useRef<boolean>(false);
+
+  const fetchEthPrice = async (): Promise<number> => {
+    try {
+      const response = await fetch('/api/eth-price');
+      const data: { ethPrice: number } = await response.json();
+      return data.ethPrice;
+    } catch {
+      return 2500;
+    }
+  };
+
+  const checkBalance = async (): Promise<boolean> => {
+    if (!isConnected || !address) {
+      setBalanceError('Please connect your wallet');
+      return false;
+    }
+    try {
+      setIsCheckingBalance(true);
+      setBalanceError('');
+      const currentEthPrice = await fetchEthPrice();
+      setEthPrice(currentEthPrice);
+      if (chain?.id !== base.id) await switchChain?.({ chainId: base.id });
+      const balanceInEth = balanceData ? parseFloat(formatEther(balanceData.value)) : 0;
+      const balanceInUSD = balanceInEth * currentEthPrice;
+      const minimumEthRequired = MINIMUM_USD_REQUIRED / currentEthPrice;
+      if (balanceInUSD < MINIMUM_USD_REQUIRED) {
+        setBalanceError(
+          `Insufficient funds. You need at least $${MINIMUM_USD_REQUIRED.toFixed(4)} (approx ${minimumEthRequired.toFixed(6)} ETH) to play.`
+        );
+        return false;
+      }
+      return true;
+    } catch {
+      setBalanceError('Failed to check balance');
+      return false;
+    } finally {
+      setIsCheckingBalance(false);
+    }
+  };
+
+  const sendGameTransaction = async (): Promise<string | null> => {
+    if (!address) return null;
+    try {
+      if (chain?.id !== base.id) {
+        await switchChain?.({ chainId: base.id });
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      const amountInEth = MINIMUM_USD_REQUIRED / ethPrice;
+      const amountInWei = parseEther(amountInEth.toFixed(18));
+      const callsId = await sendCalls({
+        calls: [{ to: GAME_FEE_RECIPIENT as `0x${string}`, value: amountInWei, data: '0x44756574' }],
+        capabilities: { dataSuffix: { value: DATA_SUFFIX, optional: false } },
+      });
+      return callsId;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'message' in error) {
+        const msg = (error as { message: string }).message;
+        if (msg.includes('rejected') || msg.includes('denied') || msg.includes('User rejected')) {
+          setBalanceError('Transaction cancelled. Please sign the transaction to play.');
+        } else {
+          setBalanceError('Transaction failed. Please try again.');
+        }
+      } else {
+        setBalanceError('Transaction failed. Please try again.');
+      }
+      return null;
+    }
+  };
+
+  const startGameAfterConfirmation = useCallback((): void => {
+    setAudioEnabled(true);
+    setPendingCallsId(null);
+    setIsConfirmingTransaction(false);
+    gameStateRef.current = {
+      ...gameStateRef.current,
+      isPlaying: true,
+      isPaused: false,
+      score: 0,
+      difficulty: 0,
+      startTime: Date.now(),
+      obstacles: [],
+      isTransactionPending: false,
+      lastObstacleSpawn: Date.now(),
+      circles: [
+        { angle: Math.PI * 1.5, direction: 'cw', color: COLORS.CIRCLE_1 },
+        { angle: Math.PI * 0.5, direction: 'cw', color: COLORS.CIRCLE_2 },
+      ],
+    };
+    setGameStatus('playing');
+    setElapsedTime(0);
+    setBalanceError('');
+  }, []);
+
+  useEffect(() => {
+    if (!pendingCallsId) return;
+    if (callsStatus?.status === 'CONFIRMED' || callsStatus?.status === 'confirmed') {
+      startGameAfterConfirmation();
+    } else if (callsStatus?.status === 'FAILED' || callsStatus?.status === 'failed') {
+      setBalanceError('Transaction failed. Please try again.');
+      setPendingCallsId(null);
+      setIsConfirmingTransaction(false);
+      gameStateRef.current.isTransactionPending = false;
+      forceUpdate((n) => n + 1);
+    }
+  }, [callsStatus, pendingCallsId, startGameAfterConfirmation]);
+
+  const startGame = async (): Promise<void> => {
+    if (!isConnected) { setBalanceError('Please connect your wallet to play'); return; }
+    const hasBalance = await checkBalance();
+    if (!hasBalance) return;
+    gameStateRef.current.isTransactionPending = true;
+    setBalanceError('Please sign the transaction in your wallet...');
+    setIsConfirmingTransaction(false);
+    forceUpdate((n) => n + 1);
+    const callsId = await sendGameTransaction();
+    if (!callsId) {
+      gameStateRef.current.isTransactionPending = false;
+      setIsConfirmingTransaction(false);
+      forceUpdate((n) => n + 1);
+      return;
+    }
+    setBalanceError('Confirming transaction on-chain...');
+    setIsConfirmingTransaction(true);
+    setPendingCallsId(callsId);
+  };
+
+  const endGame = useCallback((): void => {
+    gameStateRef.current.isPlaying = false;
+    if (gameStateRef.current.score > gameStateRef.current.highScore) {
+      gameStateRef.current.highScore = gameStateRef.current.score;
+      localStorage.setItem('duet-highscore', gameStateRef.current.highScore.toString());
+    }
+    setGameStatus('gameOver');
+  }, []);
+
+  const resetGame = (): void => { setGameStatus('menu'); setBalanceError(''); };
+
+  const handleBeat = useCallback((): void => {
+    setPulseIntensity(1);
+    setTimeout(() => setPulseIntensity(0), 200);
+  }, []);
+
+  const gameLoop = useCallback((timestamp: number): void => {
+    if (!gameStateRef.current.isPlaying) return;
+    const deltaTime = lastFrameTimeRef.current ? (timestamp - lastFrameTimeRef.current) / (1000 / 60) : 1;
+    lastFrameTimeRef.current = timestamp;
+    const currentTime = Date.now();
+    const elapsed = currentTime - gameStateRef.current.startTime;
+    setElapsedTime(elapsed);
+    const newDifficulty = calculateDifficulty(elapsed);
+    gameStateRef.current.difficulty = newDifficulty;
+    const rotationSpeed = GAME_CONFIG.ROTATION_SPEED * deltaTime;
+    if (leftControlActive.current) {
+      gameStateRef.current.circles[0].angle -= rotationSpeed;
+      gameStateRef.current.circles[1].angle -= rotationSpeed;
+      gameStateRef.current.circles[0].direction = 'ccw';
+      gameStateRef.current.circles[1].direction = 'ccw';
+    }
+    if (rightControlActive.current) {
+      gameStateRef.current.circles[0].angle += rotationSpeed;
+      gameStateRef.current.circles[1].angle += rotationSpeed;
+      gameStateRef.current.circles[0].direction = 'cw';
+      gameStateRef.current.circles[1].direction = 'cw';
+    }
+    if (currentTime - gameStateRef.current.lastObstacleSpawn > GAME_CONFIG.OBSTACLE_SPAWN_INTERVAL - newDifficulty * 100) {
+      gameStateRef.current.obstacles.push(spawnObstacle(newDifficulty));
+      gameStateRef.current.lastObstacleSpawn = currentTime;
+    }
+    gameStateRef.current.obstacles = gameStateRef.current.obstacles
+      .map(o => ({ ...o, y: o.y + (GAME_CONFIG.BASE_OBSTACLE_SPEED + newDifficulty * GAME_CONFIG.DIFFICULTY_SPEED_MULTIPLIER) * deltaTime }))
+      .filter(o => o.y < GAME_CONFIG.CANVAS_HEIGHT);
+    gameStateRef.current.score = Math.floor(elapsed / 100);
+    if (checkCollision(gameStateRef.current.circles, gameStateRef.current.obstacles)) { endGame(); return; }
+    if (gameStateRef.current.isPlaying) animationFrameRef.current = requestAnimationFrame(gameLoop);
+  }, [endGame]);
+
+  useEffect(() => {
+    if (gameStatus === 'playing' && gameStateRef.current.isPlaying) {
+      lastFrameTimeRef.current = 0;
+      animationFrameRef.current = requestAnimationFrame(gameLoop);
+      return () => { if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current); };
+    }
+  }, [gameStatus, gameLoop]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') leftControlActive.current = true;
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') rightControlActive.current = true;
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') leftControlActive.current = false;
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') rightControlActive.current = false;
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => { window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); };
+  }, []);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('duet-highscore');
+    if (saved) gameStateRef.current.highScore = parseInt(saved, 10);
+  }, []);
+
+  useEffect(() => {
+    const audio = new Audio('https://ia601905.us.archive.org/27/items/tvtunes_17714/28%20Days%20Later.mp3');
+    audio.loop = true;
+    audio.volume = 0.5;
+    audioRef.current = audio;
+    let started = false;
+    const start = () => {
+      if (audioRef.current && audioRef.current.paused && !started) {
+        audioRef.current.play().then(() => { started = true; }).catch(() => {});
+      }
+    };
+    audio.play().catch(() => {});
+    const events = ['click', 'touchstart', 'touchend', 'keydown', 'pointerdown'];
+    events.forEach(e => document.addEventListener(e, start, { capture: true }));
+    return () => {
+      audio.pause(); audio.src = ''; audioRef.current = null;
+      events.forEach(e => document.removeEventListener(e, start, { capture: true }));
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black relative overflow-hidden">
+      <AudioManager isPlaying={gameStatus === 'playing' && audioEnabled} onBeat={handleBeat} />
+
+      {isConnected && gameStatus !== 'playing' && (
+        <button
+          onClick={() => disconnect()}
+          className="fixed top-6 right-6 z-50 bg-black border border-white px-4 py-2 text-white text-xs font-medium uppercase tracking-widest hover:bg-white hover:text-black transition-smooth"
+        >
+          Disconnect
+        </button>
+      )}
+
+      {gameStatus === 'menu' && (
+        <div className="flex flex-col items-center justify-center gap-12 z-10 px-4 min-h-screen">
+          <div className="text-center animate-fade-in">
+            <h1 className="text-8xl md:text-9xl font-light text-white tracking-tight mb-4">DUET</h1>
+            <div className="h-px bg-white opacity-40 w-32 mx-auto mb-6" />
+            <p className="text-xs md:text-sm font-medium text-gray-400 uppercase tracking-widest">On-Chain Survival Game</p>
+            {gameStateRef.current.highScore > 0 && (
+              <div className="mt-8 text-center border-t border-gray-800 pt-8">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-2">Personal Best</p>
+                <p className="text-5xl md:text-6xl font-light text-white">{gameStateRef.current.highScore}</p>
+              </div>
+            )}
+          </div>
+
+          {balanceError && (
+            <div className="bg-red-900/30 backdrop-blur-md border border-red-700 px-6 py-4 max-w-md shadow-sm animate-fade-in">
+              <p className="text-red-300 text-sm font-medium text-center">{balanceError}</p>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-8 items-center mt-8">
+            {!isConnected ? (
+              <div className="flex flex-col items-center gap-4">
+                <WalletConnectButton />
+                <p className="text-gray-400 text-xs text-center max-w-md uppercase tracking-widest font-light">
+                  Connect your Base wallet. Entry fee: ${MINIMUM_USD_REQUIRED.toFixed(4)} USD ETH
+                </p>
+              </div>
+            ) : (
+              <StyledButton
+                onClick={startGame}
+                disabled={isCheckingBalance || gameStateRef.current.isTransactionPending || isConfirmingTransaction}
+                variant="primary"
+                size="xl"
+              >
+                {isConfirmingTransaction ? 'Confirming transaction...'
+                  : gameStateRef.current.isTransactionPending ? 'Sign in wallet...'
+                  : isCheckingBalance ? 'Checking balance...'
+                  : 'Start Game'}
+              </StyledButton>
+            )}
+            <div className="max-w-md border border-gray-800 pt-8 mt-4">
+              <div className="text-gray-400 text-xs text-center space-y-4">
+                <div>
+                  <p className="font-medium text-white mb-1 uppercase tracking-widest">Controls</p>
+                  <p className="text-xs font-light">Hold left/right side of screen to rotate</p>
+                </div>
+                <div>
+                  <p className="font-medium text-white mb-1 uppercase tracking-widest">Objective</p>
+                  <p className="text-xs font-light">Avoid the white obstacles to advance</p>
+                </div>
+                <p className="text-xs text-gray-500 font-light pt-2">(Desktop: Arrow Keys or A/D)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {gameStatus === 'playing' && (
+        <>
+          <div className="fixed inset-0 w-full h-full overflow-hidden bg-black">
+            <GameCanvas gameState={gameStateRef.current} pulseIntensity={pulseIntensity} />
+          </div>
+          <ControlsGuide />
+          <HUD score={gameStateRef.current.score} highScore={gameStateRef.current.highScore} elapsedTime={elapsedTime} difficulty={gameStateRef.current.difficulty} />
+          <button
+            onClick={() => setAudioEnabled(!audioEnabled)}
+            className="fixed bottom-6 left-6 z-40 bg-black border border-white px-4 py-3 text-white text-sm font-medium uppercase tracking-widest hover:bg-white hover:text-black transition-smooth"
+          >
+            {audioEnabled ? 'Sound On' : 'Sound Off'}
+          </button>
+          <MobileControls
+            onLeftControl={(active) => { leftControlActive.current = active; }}
+            onRightControl={(active) => { rightControlActive.current = active; }}
+          />
+        </>
+      )}
+
+      {gameStatus === 'gameOver' && (
+        <div className="flex flex-col items-center justify-center gap-12 z-10 px-4">
+          <div className="text-center animate-fade-in">
+            <h2 className="text-5xl md:text-7xl font-light text-white tracking-wider mb-2">GAME OVER</h2>
+            <div className="h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-30 my-8" />
+            <div className="mt-12">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-3">Score</p>
+              <p className="text-6xl md:text-7xl font-light text-white tabular-nums">{gameStateRef.current.score}</p>
+            </div>
+            {gameStateRef.current.highScore > gameStateRef.current.score && (
+              <div className="mt-8 text-gray-400">
+                <p className="text-xs font-medium uppercase tracking-widest mb-2">Best Score</p>
+                <p className="text-2xl font-light text-gray-300">{gameStateRef.current.highScore}</p>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <StyledButton
+              onClick={startGame}
+              disabled={isCheckingBalance || gameStateRef.current.isTransactionPending || isConfirmingTransaction}
+              variant="primary"
+              size="lg"
+            >
+              {isConfirmingTransaction ? 'Confirming...' : gameStateRef.current.isTransactionPending ? 'Signing...' : 'Play Again'}
+            </StyledButton>
+            <StyledButton onClick={resetGame} variant="outline" size="lg">Menu</StyledButton>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
