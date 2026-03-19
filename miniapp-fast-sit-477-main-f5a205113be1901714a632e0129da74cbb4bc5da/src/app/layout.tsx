@@ -14,6 +14,11 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+export const metadata: Metadata = {
+  title: "DUET - On-Chain Survival Game",
+  description: "A minimalist, high-intensity survival game on Base blockchain. Rotate to dodge obstacles and climb the leaderboard. On-chain entry fees, pure skill-based gameplay.",
+};
+
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="en">
@@ -27,8 +32,3 @@ export default function RootLayout({ children }: PropsWithChildren) {
     </html>
   );
 }
-
-export const metadata: Metadata = {
-  title: "DUET - On-Chain Survival Game",
-  description: "A minimalist, high-intensity survival game on Base blockchain. Rotate to dodge obstacles and climb the leaderboard. On-chain entry fees, pure skill-based gameplay.",
-};
