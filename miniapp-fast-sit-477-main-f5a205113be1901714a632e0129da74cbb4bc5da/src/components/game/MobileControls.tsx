@@ -27,7 +27,7 @@ const MobileControls: FC<MobileControlsProps> = ({
     };
   }, []);
 
-  const handleTouchStart = (side: 'left' | 'right', e: React.TouchEvent | React.MouseEvent): void => {
+  const handleTouchStart = (side: 'left' | 'right', e: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>): void => {
     e.preventDefault();
     if (side === 'left') {
       onLeftControl(true);
@@ -36,7 +36,7 @@ const MobileControls: FC<MobileControlsProps> = ({
     }
   };
 
-  const handleTouchEnd = (side: 'left' | 'right', e: React.TouchEvent | React.MouseEvent): void => {
+  const handleTouchEnd = (side: 'left' | 'right', e: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>): void => {
     e.preventDefault();
     if (side === 'left') {
       onLeftControl(false);

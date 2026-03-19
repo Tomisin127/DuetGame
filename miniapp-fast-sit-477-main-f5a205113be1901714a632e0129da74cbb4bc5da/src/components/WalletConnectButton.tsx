@@ -17,9 +17,9 @@ export default function WalletConnectButton() {
   const handleConnect = () => {
     // In Base App environment, auto-connect with injected wallet
     if (isBaseApp) {
-      const baseAccountConnector = connectors.find(c => c.id === 'baseAccount');
-      if (baseAccountConnector) {
-        connect({ connector: baseAccountConnector });
+      const injectedConnector = connectors.find(c => c.id === 'injected');
+      if (injectedConnector) {
+        connect({ connector: injectedConnector });
         return;
       }
     }
@@ -65,8 +65,7 @@ export default function WalletConnectButton() {
                     {connector.name.includes('MetaMask') ? '🦊' : 
                      connector.name.includes('Coinbase') ? '⭐' :
                      connector.name.includes('Rainbow') ? '🌈' :
-                     connector.name.includes('WalletConnect') ? '🔗' :
-                     connector.name.includes('baseAccount') ? '⛓️' : '👛'}
+                     connector.name.includes('WalletConnect') ? '🔗' : '👛'}
                   </span>
                   <span className="text-sm">{connector.name}</span>
                 </button>

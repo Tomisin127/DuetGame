@@ -1,5 +1,5 @@
 export interface Obstacle {
-  id: number;
+  id: string | number;
   x: number;
   y: number;
   width: number;
