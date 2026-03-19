@@ -1,24 +1,21 @@
 'use client'
 
-import { type ReactNode } from 'react';
+import { type ReactNode, useState, useEffect } from 'react';
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { injected, coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors';
+import { injected, coinbaseWallet, metaMask } from 'wagmi/connectors';
 
-// Simple wagmi config for Base App standard web apps
+// Create wagmi config without WalletConnect to avoid indexedDB SSR crash
 const config = createConfig({
   chains: [base],
   connectors: [
-    injected(), // For Base App injected wallet and other injected wallets
+    injected(),
     coinbaseWallet({
       appName: 'Duet Game',
       appLogoUrl: 'https://duet-game.vercel.app/logo.png',
     }),
     metaMask(),
-    walletConnect({
-      projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'default',
-    }),
   ],
   transports: {
     [base.id]: http('https://mainnet.base.org'),
@@ -33,10 +30,16 @@ interface Web3ProviderProps {
 }
 
 export function Web3Provider({ children }: Web3ProviderProps): JSX.Element {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        {mounted ? children : null}
       </QueryClientProvider>
     </WagmiProvider>
   );
