@@ -214,9 +214,15 @@ export default function DuetGame() {
   useEffect(() => {
     if (!pendingCallsId) return;
 
-    if (callsStatus?.status === 'CONFIRMED' || callsStatus?.status === 'confirmed') {
+    console.log("[v0] Transaction status:", callsStatus?.status);
+
+    const status = callsStatus?.status?.toUpperCase();
+    
+    if (status === 'CONFIRMED') {
+      console.log("[v0] Transaction confirmed, starting game");
       startGameAfterConfirmation();
-    } else if (callsStatus?.status === 'FAILED' || callsStatus?.status === 'failed') {
+    } else if (status === 'FAILED') {
+      console.log("[v0] Transaction failed");
       setBalanceError('Transaction failed. Please try again.');
       setPendingCallsId(null);
       setIsConfirmingTransaction(false);
