@@ -121,15 +121,83 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
       ctx.arc(GAME_CONFIG.CENTER_X, GAME_CONFIG.CENTER_Y, 8, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw obstacles
+      // Draw obstacles with glow effect for difficulty waves
       state.obstacles.forEach((obstacle) => {
+        if (state.difficultyWave > 3) {
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+        }
+        
         ctx.fillStyle = COLORS.OBSTACLE;
         ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
         ctx.lineWidth = 1;
         ctx.strokeRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        ctx.shadowBlur = 0;
       });
+
+      // Draw power-ups
+      state.powerUps.forEach((powerUp) => {
+        const puX = GAME_CONFIG.CENTER_X + Math.cos(powerUp.angle) * GAME_CONFIG.ORBIT_RADIUS * 1.5;
+        const puY = GAME_CONFIG.CENTER_Y + Math.sin(powerUp.angle) * GAME_CONFIG.ORBIT_RADIUS * 1.5;
+
+        const puColors: Record<string, string> = {
+          shield: '#FFD700',
+          slowmo: '#00D9FF',
+          doubleSpin: '#FF00FF',
+        };
+
+        const puColor = puColors[powerUp.type] || '#FFFF00';
+
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = puColor;
+
+        ctx.beginPath();
+        ctx.arc(puX, puY, 12, 0, Math.PI * 2);
+        ctx.fillStyle = puColor;
+        ctx.fill();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Draw type indicator
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 10px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const typeChar = powerUp.type === 'shield' ? 'S' : powerUp.type === 'slowmo' ? 'T' : 'D';
+        ctx.fillText(typeChar, puX, puY);
+      });
+
+      // Draw particles
+      state.particles.forEach((particle) => {
+        ctx.globalAlpha = particle.life;
+        ctx.fillStyle = particle.color;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+
+      // Draw shield indicator
+      if (state.activeShield) {
+        ctx.globalAlpha = 0.3;
+        ctx.strokeStyle = '#FFD700';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(
+          GAME_CONFIG.CENTER_X,
+          GAME_CONFIG.CENTER_Y,
+          GAME_CONFIG.ORBIT_RADIUS + 50,
+          0,
+          Math.PI * 2
+        );
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
 
       // Draw circles
       state.circles.forEach((circle) => {

@@ -1,4 +1,4 @@
-import type { Obstacle, Circle } from '@/types/game';
+import type { Obstacle, Circle, PowerUp, Particle } from '@/types/game';
 import { GAME_CONFIG } from './constants';
 
 export function checkCollision(
@@ -91,4 +91,91 @@ export function calculateDifficulty(elapsedTime: number): number {
 
 export function getRandomAudioTrack(tracks: readonly string[]): string {
   return tracks[Math.floor(Math.random() * tracks.length)];
+}
+
+// New mechanics utilities
+export function spawnPowerUp(difficulty: number, centerX: number, centerY: number): PowerUp | null {
+  // 5% chance per frame to spawn a power-up, increases slightly with difficulty
+  const spawnChance = 0.05 + difficulty * 0.005;
+  if (Math.random() > spawnChance) return null;
+
+  const types: Array<'shield' | 'slowmo' | 'doubleSpin'> = ['shield', 'slowmo', 'doubleSpin'];
+  const type = types[Math.floor(Math.random() * types.length)];
+
+  return {
+    id: Date.now() + Math.random(),
+    type,
+    angle: Math.random() * Math.PI * 2,
+    duration: type === 'shield' ? 5000 : type === 'slowmo' ? 3000 : 4000,
+    createdAt: Date.now(),
+  };
+}
+
+export function checkPowerUpCollision(
+  circles: [Circle, Circle],
+  powerUps: PowerUp[],
+  centerX: number,
+  centerY: number,
+  orbitRadius: number
+): PowerUp | null {
+  const { CIRCLE_RADIUS } = GAME_CONFIG;
+  const checkRadius = CIRCLE_RADIUS * 2;
+
+  for (const powerUp of powerUps) {
+    for (const circle of circles) {
+      const circleX = centerX + Math.cos(circle.angle) * orbitRadius;
+      const circleY = centerY + Math.sin(circle.angle) * orbitRadius;
+
+      const puX = centerX + Math.cos(powerUp.angle) * orbitRadius * 1.5;
+      const puY = centerY + Math.sin(powerUp.angle) * orbitRadius * 1.5;
+
+      const distanceX = circleX - puX;
+      const distanceY = circleY - puY;
+      const distanceSquared = distanceX * distanceX + distanceY * distanceY;
+
+      if (distanceSquared < checkRadius * checkRadius) {
+        return powerUp;
+      }
+    }
+  }
+
+  return null;
+}
+
+export function updatePowerUps(powerUps: PowerUp[]): PowerUp[] {
+  const now = Date.now();
+  return powerUps.filter((pu) => now - pu.createdAt < pu.duration);
+}
+
+export function createParticles(x: number, y: number, color: string, count: number = 8): Particle[] {
+  const particles: Particle[] = [];
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const speed = 2 + Math.random() * 4;
+    particles.push({
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1,
+      color,
+    });
+  }
+  return particles;
+}
+
+export function updateParticles(particles: Particle[]): Particle[] {
+  return particles
+    .map((p) => ({
+      ...p,
+      x: p.x + p.vx,
+      y: p.y + p.vy,
+      vy: p.vy + 0.15,
+      life: p.life - 0.02,
+    }))
+    .filter((p) => p.life > 0);
+}
+
+export function calculateComboMultiplier(comboCount: number): number {
+  return Math.min(1 + comboCount * 0.1, 2);
 }
