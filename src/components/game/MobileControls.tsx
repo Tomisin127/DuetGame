@@ -13,6 +13,8 @@ const MobileControls: FC<MobileControlsProps> = ({
   onRightControl,
 }) => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [leftActive, setLeftActive] = useState<boolean>(false);
+  const [rightActive, setRightActive] = useState<boolean>(false);
 
   useEffect(() => {
     const checkMobile = (): void => {
@@ -30,8 +32,10 @@ const MobileControls: FC<MobileControlsProps> = ({
   const handleTouchStart = (side: 'left' | 'right', e: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>): void => {
     e.preventDefault();
     if (side === 'left') {
+      setLeftActive(true);
       onLeftControl(true);
     } else {
+      setRightActive(true);
       onRightControl(true);
     }
   };
@@ -39,8 +43,10 @@ const MobileControls: FC<MobileControlsProps> = ({
   const handleTouchEnd = (side: 'left' | 'right', e: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>): void => {
     e.preventDefault();
     if (side === 'left') {
+      setLeftActive(false);
       onLeftControl(false);
     } else {
+      setRightActive(false);
       onRightControl(false);
     }
   };
@@ -52,27 +58,43 @@ const MobileControls: FC<MobileControlsProps> = ({
   return (
     <div className="fixed inset-0 z-10 pointer-events-auto">
       <div className="absolute inset-0 flex">
-        {/* Left touch zone - covers left half of screen */}
+        {/* Left touch zone with visual feedback */}
         <div
-          className="w-1/2 h-full"
+          className={`w-1/2 h-full transition-colors duration-75 ${
+            leftActive ? 'bg-white/10' : 'bg-transparent'
+          }`}
           onTouchStart={(e) => handleTouchStart('left', e)}
           onTouchEnd={(e) => handleTouchEnd('left', e)}
           onMouseDown={(e) => handleTouchStart('left', e)}
           onMouseUp={(e) => handleTouchEnd('left', e)}
           onMouseLeave={(e) => handleTouchEnd('left', e)}
           style={{ touchAction: 'none' }}
-        />
+        >
+          {leftActive && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-white/60 text-sm font-light tracking-widest">← CCW</div>
+            </div>
+          )}
+        </div>
 
-        {/* Right touch zone - covers right half of screen */}
+        {/* Right touch zone with visual feedback */}
         <div
-          className="w-1/2 h-full"
+          className={`w-1/2 h-full transition-colors duration-75 ${
+            rightActive ? 'bg-white/10' : 'bg-transparent'
+          }`}
           onTouchStart={(e) => handleTouchStart('right', e)}
           onTouchEnd={(e) => handleTouchEnd('right', e)}
           onMouseDown={(e) => handleTouchStart('right', e)}
           onMouseUp={(e) => handleTouchEnd('right', e)}
           onMouseLeave={(e) => handleTouchEnd('right', e)}
           style={{ touchAction: 'none' }}
-        />
+        >
+          {rightActive && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-white/60 text-sm font-light tracking-widest">CW →</div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

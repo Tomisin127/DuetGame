@@ -14,6 +14,23 @@ export interface Circle {
   color: string;
 }
 
+export interface PowerUp {
+  id: string | number;
+  type: 'shield' | 'slowmo' | 'doubleSpin';
+  angle: number;
+  duration: number;
+  createdAt: number;
+}
+
+export interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  color: string;
+}
+
 export interface GameState {
   isPlaying: boolean;
   isPaused: boolean;
@@ -25,6 +42,14 @@ export interface GameState {
   circles: [Circle, Circle];
   isTransactionPending: boolean;
   lastObstacleSpawn: number;
+  powerUps: PowerUp[];
+  particles: Particle[];
+  comboCount: number;
+  lastSuccessTime: number;
+  activeShield: boolean;
+  slowMoEndTime: number;
+  difficultyWave: number;
 }
 
 export type GameStatus = 'menu' | 'playing' | 'gameOver';
+

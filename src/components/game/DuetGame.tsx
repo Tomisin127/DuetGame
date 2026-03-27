@@ -11,6 +11,12 @@ import {
   spawnObstacle,
   updateObstacles,
   calculateDifficulty,
+  spawnPowerUp,
+  checkPowerUpCollision,
+  updatePowerUps,
+  createParticles,
+  updateParticles,
+  calculateComboMultiplier,
 } from '@/lib/game/utils';
 import GameCanvas from '@/components/game/GameCanvas';
 import HUD from '@/components/game/HUD';
@@ -204,6 +210,13 @@ export default function DuetGame() {
         { angle: Math.PI * 1.5, direction: 'cw', color: COLORS.CIRCLE_1 },
         { angle: Math.PI * 0.5, direction: 'cw', color: COLORS.CIRCLE_2 },
       ],
+      powerUps: [],
+      particles: [],
+      comboCount: 0,
+      lastSuccessTime: Date.now(),
+      activeShield: false,
+      slowMoEndTime: 0,
+      difficultyWave: 0,
     };
 
     setGameStatus('playing');
@@ -229,27 +242,31 @@ export default function DuetGame() {
   }, [callsStatus, pendingCallsId, startGameAfterConfirmation]);
 
   const startGame = async (): Promise<void> => {
-    setAudioEnabled(true);
-    gameStateRef.current = {
-      ...gameStateRef.current,
-      isPlaying: true,
-      isPaused: false,
-      score: 0,
-      difficulty: 0,
-      startTime: Date.now(),
-      obstacles: [],
-      isTransactionPending: false,
-      lastObstacleSpawn: Date.now(),
-      circles: [
-        { angle: Math.PI * 1.5, direction: 'cw', color: COLORS.CIRCLE_1 },
-        { angle: Math.PI * 0.5, direction: 'cw', color: COLORS.CIRCLE_2 },
-      ],
-    };
+    if (!isConnected) {
+      setBalanceError('Please connect your wallet to play');
+      return;
+    }
 
-    setGameStatus('playing');
-    setElapsedTime(0);
-    setBalanceError('');
+    const hasBalance = await checkBalance();
+    if (!hasBalance) return;
+
+    gameStateRef.current.isTransactionPending = true;
+    setBalanceError('Signing transaction in your wallet...');
+    setIsConfirmingTransaction(false);
     forceUpdate((n) => n + 1);
+
+    const callsId = await sendGameTransaction();
+
+    if (!callsId) {
+      gameStateRef.current.isTransactionPending = false;
+      setIsConfirmingTransaction(false);
+      forceUpdate((n) => n + 1);
+      return;
+    }
+
+    setBalanceError('Confirming transaction on-chain...');
+    setIsConfirmingTransaction(true);
+    setPendingCallsId(callsId);
   };
 
   const endGame = useCallback((): void => {
@@ -288,22 +305,73 @@ export default function DuetGame() {
 
     const newDifficulty = calculateDifficulty(elapsed);
     gameStateRef.current.difficulty = newDifficulty;
+    gameStateRef.current.difficultyWave = Math.floor(newDifficulty / 5);
 
     const rotationSpeed = GAME_CONFIG.ROTATION_SPEED * deltaTime;
 
+    // Apply slow-mo effect if active
+    const effectiveDeltaTime = currentTime < gameStateRef.current.slowMoEndTime ? deltaTime * 0.5 : deltaTime;
+
     if (leftControlActive.current) {
-      gameStateRef.current.circles[0].angle -= rotationSpeed;
-      gameStateRef.current.circles[1].angle -= rotationSpeed;
+      gameStateRef.current.circles[0].angle -= rotationSpeed * (currentTime < gameStateRef.current.slowMoEndTime ? 0.5 : 1);
+      gameStateRef.current.circles[1].angle -= rotationSpeed * (currentTime < gameStateRef.current.slowMoEndTime ? 0.5 : 1);
       gameStateRef.current.circles[0].direction = 'ccw';
       gameStateRef.current.circles[1].direction = 'ccw';
     }
 
     if (rightControlActive.current) {
-      gameStateRef.current.circles[0].angle += rotationSpeed;
-      gameStateRef.current.circles[1].angle += rotationSpeed;
+      gameStateRef.current.circles[0].angle += rotationSpeed * (currentTime < gameStateRef.current.slowMoEndTime ? 0.5 : 1);
+      gameStateRef.current.circles[1].angle += rotationSpeed * (currentTime < gameStateRef.current.slowMoEndTime ? 0.5 : 1);
       gameStateRef.current.circles[0].direction = 'cw';
       gameStateRef.current.circles[1].direction = 'cw';
     }
+
+    // Spawn power-ups
+    const newPowerUp = spawnPowerUp(newDifficulty, GAME_CONFIG.CENTER_X, GAME_CONFIG.CENTER_Y);
+    if (newPowerUp) {
+      gameStateRef.current.powerUps.push(newPowerUp);
+    }
+
+    // Check power-up collisions
+    const collectedPowerUp = checkPowerUpCollision(
+      gameStateRef.current.circles,
+      gameStateRef.current.powerUps,
+      GAME_CONFIG.CENTER_X,
+      GAME_CONFIG.CENTER_Y,
+      GAME_CONFIG.ORBIT_RADIUS
+    );
+
+    if (collectedPowerUp) {
+      // Create particles at collection
+      gameStateRef.current.particles.push(
+        ...createParticles(
+          GAME_CONFIG.CENTER_X,
+          GAME_CONFIG.CENTER_Y,
+          collectedPowerUp.type === 'shield' ? '#FFD700' : collectedPowerUp.type === 'slowmo' ? '#00D9FF' : '#FF00FF',
+          12
+        )
+      );
+
+      if (collectedPowerUp.type === 'shield') {
+        gameStateRef.current.activeShield = true;
+        setTimeout(() => {
+          gameStateRef.current.activeShield = false;
+        }, 5000);
+      } else if (collectedPowerUp.type === 'slowmo') {
+        gameStateRef.current.slowMoEndTime = currentTime + 3000;
+      } else if (collectedPowerUp.type === 'doubleSpin') {
+        gameStateRef.current.comboCount = Math.min(gameStateRef.current.comboCount + 10, 100);
+      }
+
+      gameStateRef.current.powerUps = gameStateRef.current.powerUps.filter((pu) => pu.id !== collectedPowerUp.id);
+      gameStateRef.current.score += Math.floor(50 * calculateComboMultiplier(gameStateRef.current.comboCount));
+    }
+
+    // Update power-ups
+    gameStateRef.current.powerUps = updatePowerUps(gameStateRef.current.powerUps);
+
+    // Update particles
+    gameStateRef.current.particles = updateParticles(gameStateRef.current.particles);
 
     if (
       currentTime - gameStateRef.current.lastObstacleSpawn >
@@ -315,7 +383,7 @@ export default function DuetGame() {
 
     gameStateRef.current.obstacles = gameStateRef.current.obstacles.map(obstacle => ({
       ...obstacle,
-      y: obstacle.y + (GAME_CONFIG.BASE_OBSTACLE_SPEED + newDifficulty * GAME_CONFIG.DIFFICULTY_SPEED_MULTIPLIER) * deltaTime,
+      y: obstacle.y + (GAME_CONFIG.BASE_OBSTACLE_SPEED + newDifficulty * GAME_CONFIG.DIFFICULTY_SPEED_MULTIPLIER) * effectiveDeltaTime,
     }));
 
     gameStateRef.current.obstacles = gameStateRef.current.obstacles.filter(
@@ -324,9 +392,24 @@ export default function DuetGame() {
 
     gameStateRef.current.score = Math.floor(elapsed / 100);
 
+    // Update combo
+    if (currentTime - gameStateRef.current.lastSuccessTime > 1000) {
+      gameStateRef.current.comboCount = Math.max(0, gameStateRef.current.comboCount - 1);
+      gameStateRef.current.lastSuccessTime = currentTime;
+    }
+
     if (checkCollision(gameStateRef.current.circles, gameStateRef.current.obstacles)) {
-      endGame();
-      return;
+      if (!gameStateRef.current.activeShield) {
+        endGame();
+        return;
+      } else {
+        // Shield absorbs hit, remove one obstacle
+        gameStateRef.current.obstacles = gameStateRef.current.obstacles.slice(1);
+        gameStateRef.current.activeShield = false;
+        gameStateRef.current.particles.push(
+          ...createParticles(GAME_CONFIG.CENTER_X, GAME_CONFIG.CENTER_Y, '#FFD700', 20)
+        );
+      }
     }
 
     if (gameStateRef.current.isPlaying) {
@@ -450,14 +533,29 @@ export default function DuetGame() {
           )}
 
           <div className="flex flex-col gap-8 items-center mt-8">
-            <StyledButton
-              onClick={startGame}
-              disabled={false}
-              variant="primary"
-              size="xl"
-            >
-              Start Game
-            </StyledButton>
+            {!isConnected ? (
+              <div className="flex flex-col items-center gap-4">
+                <WalletConnectButton />
+                <p className="text-gray-400 text-xs text-center max-w-md uppercase tracking-widest font-light">
+                  Connect your Base wallet. Entry fee: ${MINIMUM_USD_REQUIRED.toFixed(6)} USD ETH
+                </p>
+              </div>
+            ) : (
+              <StyledButton
+                onClick={startGame}
+                disabled={isCheckingBalance || gameStateRef.current.isTransactionPending || isConfirmingTransaction}
+                variant="primary"
+                size="xl"
+              >
+                {isConfirmingTransaction
+                  ? 'Confirming on-chain...'
+                  : gameStateRef.current.isTransactionPending
+                  ? 'Sign in wallet...'
+                  : isCheckingBalance
+                  ? 'Checking balance...'
+                  : 'Start Game'}
+              </StyledButton>
+            )}
 
             <div className="max-w-md border border-gray-800 pt-8 mt-4">
               <div className="text-gray-400 text-xs text-center space-y-4">
@@ -492,6 +590,9 @@ export default function DuetGame() {
             highScore={gameStateRef.current.highScore}
             elapsedTime={elapsedTime}
             difficulty={gameStateRef.current.difficulty}
+            combo={gameStateRef.current.comboCount}
+            shield={gameStateRef.current.activeShield}
+            slowMoActive={Date.now() < gameStateRef.current.slowMoEndTime}
           />
 
           <button
