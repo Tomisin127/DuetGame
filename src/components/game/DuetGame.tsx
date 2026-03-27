@@ -229,31 +229,27 @@ export default function DuetGame() {
   }, [callsStatus, pendingCallsId, startGameAfterConfirmation]);
 
   const startGame = async (): Promise<void> => {
-    if (!isConnected) {
-      setBalanceError('Please connect your wallet to play');
-      return;
-    }
+    setAudioEnabled(true);
+    gameStateRef.current = {
+      ...gameStateRef.current,
+      isPlaying: true,
+      isPaused: false,
+      score: 0,
+      difficulty: 0,
+      startTime: Date.now(),
+      obstacles: [],
+      isTransactionPending: false,
+      lastObstacleSpawn: Date.now(),
+      circles: [
+        { angle: Math.PI * 1.5, direction: 'cw', color: COLORS.CIRCLE_1 },
+        { angle: Math.PI * 0.5, direction: 'cw', color: COLORS.CIRCLE_2 },
+      ],
+    };
 
-    const hasBalance = await checkBalance();
-    if (!hasBalance) return;
-
-    gameStateRef.current.isTransactionPending = true;
-    setBalanceError('Please sign the transaction in your wallet...');
-    setIsConfirmingTransaction(false);
+    setGameStatus('playing');
+    setElapsedTime(0);
+    setBalanceError('');
     forceUpdate((n) => n + 1);
-
-    const callsId = await sendGameTransaction();
-
-    if (!callsId) {
-      gameStateRef.current.isTransactionPending = false;
-      setIsConfirmingTransaction(false);
-      forceUpdate((n) => n + 1);
-      return;
-    }
-
-    setBalanceError('Confirming transaction on-chain...');
-    setIsConfirmingTransaction(true);
-    setPendingCallsId(callsId);
   };
 
   const endGame = useCallback((): void => {
@@ -454,29 +450,14 @@ export default function DuetGame() {
           )}
 
           <div className="flex flex-col gap-8 items-center mt-8">
-            {!isConnected ? (
-              <div className="flex flex-col items-center gap-4">
-                <WalletConnectButton />
-                <p className="text-gray-400 text-xs text-center max-w-md uppercase tracking-widest font-light">
-                  Connect your Base wallet. Entry fee: ${MINIMUM_USD_REQUIRED.toFixed(4)} USD ETH
-                </p>
-              </div>
-            ) : (
-              <StyledButton
-                onClick={startGame}
-                disabled={isCheckingBalance || gameStateRef.current.isTransactionPending || isConfirmingTransaction}
-                variant="primary"
-                size="xl"
-              >
-                {isConfirmingTransaction
-                  ? 'Confirming transaction...'
-                  : gameStateRef.current.isTransactionPending
-                  ? 'Sign in wallet...'
-                  : isCheckingBalance
-                  ? 'Checking balance...'
-                  : 'Start Game'}
-              </StyledButton>
-            )}
+            <StyledButton
+              onClick={startGame}
+              disabled={false}
+              variant="primary"
+              size="xl"
+            >
+              Start Game
+            </StyledButton>
 
             <div className="max-w-md border border-gray-800 pt-8 mt-4">
               <div className="text-gray-400 text-xs text-center space-y-4">
