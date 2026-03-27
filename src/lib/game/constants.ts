@@ -15,9 +15,9 @@ export const GAME_CONFIG = {
   ROTATION_SPEED: 0.06,
 } as const;
 
-// ERC-8021 Attribution Data Suffix for Builder Code (bc_p5fu4k4i)
-// Format: 0x<attribution_header><builder_codes>
-export const DATA_SUFFIX = '0x0084626370';
+// ERC-8021 Attribution Data Suffix for Builder Code (bc_928el9vb)
+// Format: 0x8021 + builder code hex
+export const DATA_SUFFIX = '0x0862635f3932386531396262800000000000000000000000000000000000000080218021';
 
 export const COLORS = {
   BACKGROUND: '#050a0f',

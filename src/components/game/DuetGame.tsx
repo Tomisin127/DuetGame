@@ -148,13 +148,21 @@ export default function DuetGame() {
     if (!address) return null;
 
     try {
+      console.log('[v0] Starting transaction with builder code: bc_928el9vb');
+      
       if (chain?.id !== base.id) {
+        console.log('[v0] Switching to Base chain...');
         await switchChain?.({ chainId: base.id });
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
       const amountInEth = MINIMUM_USD_REQUIRED / ethPrice;
       const amountInWei = parseEther(amountInEth.toFixed(18));
+
+      console.log('[v0] Sending transaction with:');
+      console.log('[v0] - Amount:', amountInWei.toString(), 'wei');
+      console.log('[v0] - To:', GAME_FEE_RECIPIENT);
+      console.log('[v0] - DATA_SUFFIX:', DATA_SUFFIX);
 
       const callsId = await sendCalls({
         calls: [
@@ -172,9 +180,10 @@ export default function DuetGame() {
         },
       });
 
+      console.log('[v0] Transaction sent with ID:', callsId);
       return callsId;
     } catch (error: unknown) {
-      console.error('Transaction error:', error);
+      console.error('[v0] Transaction error:', error);
 
       if (error && typeof error === 'object' && 'message' in error) {
         const errorMessage = (error as { message: string }).message;
@@ -192,6 +201,9 @@ export default function DuetGame() {
   };
 
   const startGameAfterConfirmation = useCallback((): void => {
+    console.log('[v0] startGameAfterConfirmation() called');
+    console.log('[v0] Current gameStatus before change:', gameStatus);
+
     setAudioEnabled(true);
     setPendingCallsId(null);
     setIsConfirmingTransaction(false);
@@ -219,25 +231,39 @@ export default function DuetGame() {
       difficultyWave: 0,
     };
 
+    console.log('[v0] Setting gameStatus to playing');
     setGameStatus('playing');
     setElapsedTime(0);
     setBalanceError('');
     forceUpdate((n) => n + 1);
+    
+    console.log('[v0] Game should now be playing');
   }, []);
 
   useEffect(() => {
     if (!pendingCallsId) return;
 
-    const status = callsStatus?.status?.toUpperCase() || '';
+    console.log('[v0] Checking calls status for:', pendingCallsId);
+    console.log('[v0] Current callsStatus:', callsStatus);
+    console.log('[v0] callsStatus?.status:', callsStatus?.status);
+    console.log('[v0] isCheckingStatus:', isCheckingStatus);
 
-    if (status === 'CONFIRMED') {
+    const status = callsStatus?.status?.toUpperCase() || '';
+    console.log('[v0] Normalized status:', status);
+
+    // Check for multiple possible confirmation states
+    if (status === 'CONFIRMED' || callsStatus?.receipts?.length) {
+      console.log('[v0] Transaction CONFIRMED! Starting game...');
       startGameAfterConfirmation();
     } else if (status === 'FAILED') {
+      console.log('[v0] Transaction FAILED');
       setBalanceError('Transaction failed. Please try again.');
       setPendingCallsId(null);
       setIsConfirmingTransaction(false);
       gameStateRef.current.isTransactionPending = false;
       forceUpdate((n) => n + 1);
+    } else {
+      console.log('[v0] Transaction pending with status:', status);
     }
   }, [callsStatus, pendingCallsId, startGameAfterConfirmation]);
 
@@ -418,11 +444,16 @@ export default function DuetGame() {
   }, [endGame]);
 
   useEffect(() => {
+    console.log('[v0] gameStatus changed to:', gameStatus);
+    console.log('[v0] gameStateRef.current.isPlaying:', gameStateRef.current.isPlaying);
+
     if (gameStatus === 'playing' && gameStateRef.current.isPlaying) {
+      console.log('[v0] Starting game loop...');
       lastFrameTimeRef.current = 0;
       animationFrameRef.current = requestAnimationFrame(gameLoop);
 
       return () => {
+        console.log('[v0] Cleaning up game loop');
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
         }
