@@ -186,7 +186,6 @@ export default function DuetGame() {
   };
 
   const startGameAfterConfirmation = useCallback((): void => {
-    console.log("[v0] startGameAfterConfirmation called");
     setAudioEnabled(true);
     setPendingCallsId(null);
     setIsConfirmingTransaction(false);
@@ -207,7 +206,6 @@ export default function DuetGame() {
       ],
     };
 
-    console.log("[v0] Setting gameStatus to playing");
     setGameStatus('playing');
     setElapsedTime(0);
     setBalanceError('');
@@ -217,20 +215,16 @@ export default function DuetGame() {
   useEffect(() => {
     if (!pendingCallsId) return;
 
-    console.log("[v0] Transaction status:", callsStatus?.status, "Type:", typeof callsStatus?.status);
+    const status = callsStatus?.status?.toUpperCase() || '';
 
-    if (callsStatus?.status === 'CONFIRMED' || callsStatus?.status === 'confirmed') {
-      console.log("[v0] Transaction confirmed, starting game");
+    if (status === 'CONFIRMED') {
       startGameAfterConfirmation();
-    } else if (callsStatus?.status === 'FAILED' || callsStatus?.status === 'failed') {
-      console.log("[v0] Transaction failed");
+    } else if (status === 'FAILED') {
       setBalanceError('Transaction failed. Please try again.');
       setPendingCallsId(null);
       setIsConfirmingTransaction(false);
       gameStateRef.current.isTransactionPending = false;
       forceUpdate((n) => n + 1);
-    } else {
-      console.log("[v0] Transaction pending, status:", callsStatus?.status);
     }
   }, [callsStatus, pendingCallsId, startGameAfterConfirmation]);
 
