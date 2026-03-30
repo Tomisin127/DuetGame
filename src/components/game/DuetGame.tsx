@@ -207,6 +207,7 @@ export default function DuetGame() {
     setAudioEnabled(true);
     setPendingCallsId(null);
     setIsConfirmingTransaction(false);
+    setBalanceError('');
 
     gameStateRef.current = {
       ...gameStateRef.current,
@@ -234,7 +235,6 @@ export default function DuetGame() {
     console.log('[v0] Setting gameStatus to playing');
     setGameStatus('playing');
     setElapsedTime(0);
-    setBalanceError('');
     forceUpdate((n) => n + 1);
     
     console.log('[v0] Game should now be playing');
@@ -246,13 +246,25 @@ export default function DuetGame() {
     console.log('[v0] Checking calls status for:', pendingCallsId);
     console.log('[v0] Current callsStatus:', callsStatus);
     console.log('[v0] callsStatus?.status:', callsStatus?.status);
+    console.log('[v0] callsStatus?.receipts:', callsStatus?.receipts);
     console.log('[v0] isCheckingStatus:', isCheckingStatus);
+
+    if (!callsStatus) {
+      console.log('[v0] callsStatus not yet available, waiting...');
+      return;
+    }
 
     const status = callsStatus?.status?.toUpperCase() || '';
     console.log('[v0] Normalized status:', status);
 
-    // Check for multiple possible confirmation states
-    if (status === 'CONFIRMED' || callsStatus?.receipts?.length) {
+    // Check for confirmation - multiple possible states
+    const isConfirmed = 
+      status === 'CONFIRMED' || 
+      status === 'SUCCESS' ||
+      (callsStatus?.receipts && callsStatus.receipts.length > 0) ||
+      (Array.isArray(callsStatus?.receipts) && callsStatus.receipts.some(r => r));
+
+    if (isConfirmed) {
       console.log('[v0] Transaction CONFIRMED! Starting game...');
       startGameAfterConfirmation();
     } else if (status === 'FAILED') {
@@ -448,9 +460,18 @@ export default function DuetGame() {
     console.log('[v0] gameStateRef.current.isPlaying:', gameStateRef.current.isPlaying);
 
     if (gameStatus === 'playing' && gameStateRef.current.isPlaying) {
-      console.log('[v0] Starting game loop...');
+      console.log('[v0] Conditions met, starting game loop...');
       lastFrameTimeRef.current = 0;
-      animationFrameRef.current = requestAnimationFrame(gameLoop);
+      
+      // Ensure we're ready to render
+      const startGameLoop = () => {
+        if (gameStateRef.current.isPlaying && gameStatus === 'playing') {
+          console.log('[v0] Game loop starting');
+          animationFrameRef.current = requestAnimationFrame(gameLoop);
+        }
+      };
+      
+      startGameLoop();
 
       return () => {
         console.log('[v0] Cleaning up game loop');
