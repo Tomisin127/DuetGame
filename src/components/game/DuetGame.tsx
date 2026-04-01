@@ -2,10 +2,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAccount, useConnect, useDisconnect, useSwitchChain, useBalance, useSendCalls, useCallsStatus } from 'wagmi';
 import { base } from 'wagmi/chains';
-import { formatEther, parseEther, toHex, concat } from 'viem';
+import { formatEther, parseEther } from 'viem';
+import { Attribution } from 'ox/erc8021';
 import { useWalletClient } from 'wagmi';
 import type { GameState, GameStatus } from '@/types/game';
-import { GAME_CONFIG, COLORS, DATA_SUFFIX } from '@/lib/game/constants';
+import { GAME_CONFIG, COLORS, BUILDER_CODE } from '@/lib/game/constants';
 import {
   checkCollision,
   spawnObstacle,
@@ -119,6 +120,7 @@ export default function DuetGame() {
         await switchChain?.({ chainId: base.id });
       }
 
+      // Get fresh balance data with a small delay to ensure latest balance
       const balanceInEth = balanceData ? parseFloat(formatEther(balanceData.value)) : 0;
       const balanceInUSD = balanceInEth * currentEthPrice;
 
@@ -126,10 +128,20 @@ export default function DuetGame() {
       setWalletBalanceUSD(balanceInUSD.toFixed(2));
 
       const minimumEthRequired = MINIMUM_USD_REQUIRED / currentEthPrice;
+      // Add gas buffer (0.001 ETH ≈ $2.50 at $2500/ETH) for Base network transaction
+      const gasBufferEth = 0.001;
+      const totalEthNeeded = minimumEthRequired + gasBufferEth;
+      const totalUsdNeeded = totalEthNeeded * currentEthPrice;
 
-      if (balanceInUSD < MINIMUM_USD_REQUIRED) {
+      console.log('[v0] Balance check:');
+      console.log('[v0] - Your balance:', balanceInEth.toFixed(6), 'ETH ($' + balanceInUSD.toFixed(2) + ')');
+      console.log('[v0] - Transaction fee:', MINIMUM_USD_REQUIRED.toFixed(6), 'USD');
+      console.log('[v0] - Gas buffer:', gasBufferEth, 'ETH');
+      console.log('[v0] - Total needed:', totalEthNeeded.toFixed(6), 'ETH ($' + totalUsdNeeded.toFixed(2) + ')');
+
+      if (balanceInEth < totalEthNeeded) {
         setBalanceError(
-          `Insufficient funds. You need at least $${MINIMUM_USD_REQUIRED.toFixed(3)} (approx ${minimumEthRequired.toFixed(6)} ETH) to play.`
+          `Insufficient funds. You need ${totalEthNeeded.toFixed(6)} ETH ($${totalUsdNeeded.toFixed(2)}) including gas fees. You have ${balanceInEth.toFixed(6)} ETH.`
         );
         return false;
       }
@@ -163,24 +175,35 @@ export default function DuetGame() {
 
       const amountInEth = MINIMUM_USD_REQUIRED / ethPrice;
       const amountInWei = parseEther(amountInEth.toFixed(18));
-
-      // Create transaction data with viem: "Duet" + builder code
-      const duetData = toHex('Duet');
-      const builderCodeData = toHex('bc_928el9vb');
-      const combinedData = concat([duetData, builderCodeData]);
+      
+      // Verify we have enough balance including gas
+      const currentBalance = balanceData ? parseFloat(formatEther(balanceData.value)) : 0;
+      const gasBufferEth = 0.001;
+      const totalNeeded = amountInEth + gasBufferEth;
+      
+      if (currentBalance < totalNeeded) {
+        setBalanceError(`Insufficient balance for transaction. Need ${totalNeeded.toFixed(6)} ETH, have ${currentBalance.toFixed(6)} ETH`);
+        return null;
+      }
 
       console.log('[v0] Sending transaction with:');
       console.log('[v0] - Amount:', amountInWei.toString(), 'wei');
       console.log('[v0] - To:', GAME_FEE_RECIPIENT);
-      console.log('[v0] - Combined Data:', combinedData);
-      console.log('[v0] - Builder Code: bc_928el9vb');
+      console.log('[v0] - Builder Code:', BUILDER_CODE);
+      console.log('[v0] - Gas buffer included:', gasBufferEth, 'ETH');
+
+      // Generate DATA_SUFFIX using Attribution.toDataSuffix with builder code
+      const DATA_SUFFIX = Attribution.toDataSuffix({
+        codes: [BUILDER_CODE],
+      });
+
+      console.log('[v0] - Generated DATA_SUFFIX:', DATA_SUFFIX);
 
       const callsId = await sendCalls({
         calls: [
           {
             to: GAME_FEE_RECIPIENT as `0x${string}`,
             value: amountInWei,
-            data: combinedData,
           },
         ],
         capabilities: {
@@ -202,7 +225,9 @@ export default function DuetGame() {
       if (error && typeof error === 'object' && 'message' in error) {
         const errorMessage = (error as { message: string }).message;
         console.error('[v0] Error message:', errorMessage);
-        if (errorMessage.includes('rejected') || errorMessage.includes('denied') || errorMessage.includes('User rejected')) {
+        if (errorMessage.includes('insufficient')) {
+          setBalanceError('Insufficient funds including gas fees. Try adding more ETH to your wallet.');
+        } else if (errorMessage.includes('rejected') || errorMessage.includes('denied') || errorMessage.includes('User rejected')) {
           setBalanceError('Transaction cancelled. Please sign the transaction to play.');
         } else {
           setBalanceError(`Transaction failed: ${errorMessage}`);
