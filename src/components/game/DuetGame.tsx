@@ -145,10 +145,15 @@ export default function DuetGame() {
   };
 
   const sendGameTransaction = async (): Promise<string | null> => {
-    if (!address) return null;
+    if (!address) {
+      console.error('[v0] No address available for transaction');
+      return null;
+    }
 
     try {
       console.log('[v0] Starting transaction with builder code: bc_928el9vb');
+      console.log('[v0] Address:', address);
+      console.log('[v0] Current chain:', chain?.id, 'Base chain ID:', base.id);
       
       if (chain?.id !== base.id) {
         console.log('[v0] Switching to Base chain...');
@@ -180,17 +185,21 @@ export default function DuetGame() {
         },
       });
 
-      console.log('[v0] Transaction sent with ID:', callsId);
+      console.log('[v0] Transaction sent successfully with ID:', callsId);
+      console.log('[v0] CallsId type:', typeof callsId, 'Value:', JSON.stringify(callsId));
       return callsId;
     } catch (error: unknown) {
       console.error('[v0] Transaction error:', error);
+      console.error('[v0] Error type:', typeof error);
+      console.error('[v0] Error keys:', error && typeof error === 'object' ? Object.keys(error) : 'N/A');
 
       if (error && typeof error === 'object' && 'message' in error) {
         const errorMessage = (error as { message: string }).message;
+        console.error('[v0] Error message:', errorMessage);
         if (errorMessage.includes('rejected') || errorMessage.includes('denied') || errorMessage.includes('User rejected')) {
           setBalanceError('Transaction cancelled. Please sign the transaction to play.');
         } else {
-          setBalanceError('Transaction failed. Please try again.');
+          setBalanceError(`Transaction failed: ${errorMessage}`);
         }
       } else {
         setBalanceError('Transaction failed. Please try again.');
@@ -258,17 +267,21 @@ export default function DuetGame() {
     console.log('[v0] Normalized status:', status);
 
     // Check for confirmation - multiple possible states
+    const hasReceipts = callsStatus?.receipts && callsStatus.receipts.length > 0;
+    const hasAnyReceipt = Array.isArray(callsStatus?.receipts) && callsStatus.receipts.some(r => r);
     const isConfirmed = 
       status === 'CONFIRMED' || 
       status === 'SUCCESS' ||
-      (callsStatus?.receipts && callsStatus.receipts.length > 0) ||
-      (Array.isArray(callsStatus?.receipts) && callsStatus.receipts.some(r => r));
+      hasReceipts ||
+      hasAnyReceipt;
+
+    console.log('[v0] Debug - hasReceipts:', hasReceipts, 'hasAnyReceipt:', hasAnyReceipt, 'status:', status, 'isConfirmed:', isConfirmed);
 
     if (isConfirmed) {
       console.log('[v0] Transaction CONFIRMED! Starting game...');
       startGameAfterConfirmation();
-    } else if (status === 'FAILED') {
-      console.log('[v0] Transaction FAILED');
+    } else if (status === 'FAILED' || status?.includes('FAILED') || status?.includes('ERROR')) {
+      console.log('[v0] Transaction FAILED with status:', status);
       setBalanceError('Transaction failed. Please try again.');
       setPendingCallsId(null);
       setIsConfirmingTransaction(false);
@@ -277,7 +290,7 @@ export default function DuetGame() {
     } else {
       console.log('[v0] Transaction pending with status:', status);
     }
-  }, [callsStatus, pendingCallsId, startGameAfterConfirmation]);
+  }, [callsStatus, pendingCallsId]);
 
   const startGame = async (): Promise<void> => {
     if (!isConnected) {
