@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAccount, useConnect, useDisconnect, useSwitchChain, useBalance, useSendCalls, useCallsStatus } from 'wagmi';
 import { base } from 'wagmi/chains';
-import { formatEther, parseEther } from 'viem';
+import { formatEther, parseEther, toHex, concat } from 'viem';
 import { useWalletClient } from 'wagmi';
 import type { GameState, GameStatus } from '@/types/game';
 import { GAME_CONFIG, COLORS, DATA_SUFFIX } from '@/lib/game/constants';
@@ -164,17 +164,23 @@ export default function DuetGame() {
       const amountInEth = MINIMUM_USD_REQUIRED / ethPrice;
       const amountInWei = parseEther(amountInEth.toFixed(18));
 
+      // Create transaction data with viem: "Duet" + builder code
+      const duetData = toHex('Duet');
+      const builderCodeData = toHex('bc_928el9vb');
+      const combinedData = concat([duetData, builderCodeData]);
+
       console.log('[v0] Sending transaction with:');
       console.log('[v0] - Amount:', amountInWei.toString(), 'wei');
       console.log('[v0] - To:', GAME_FEE_RECIPIENT);
-      console.log('[v0] - DATA_SUFFIX:', DATA_SUFFIX);
+      console.log('[v0] - Combined Data:', combinedData);
+      console.log('[v0] - Builder Code: bc_928el9vb');
 
       const callsId = await sendCalls({
         calls: [
           {
             to: GAME_FEE_RECIPIENT as `0x${string}`,
             value: amountInWei,
-            data: '0x44756574',
+            data: combinedData,
           },
         ],
         capabilities: {
@@ -213,21 +219,23 @@ export default function DuetGame() {
     console.log('[v0] startGameAfterConfirmation() called');
     console.log('[v0] Current gameStatus before change:', gameStatus);
 
-    setAudioEnabled(true);
+    // Critical: Reset all transaction state FIRST
     setPendingCallsId(null);
     setIsConfirmingTransaction(false);
     setBalanceError('');
 
+    // Update game state with fresh start
+    const now = Date.now();
     gameStateRef.current = {
       ...gameStateRef.current,
       isPlaying: true,
       isPaused: false,
       score: 0,
       difficulty: 0,
-      startTime: Date.now(),
+      startTime: now,
       obstacles: [],
       isTransactionPending: false,
-      lastObstacleSpawn: Date.now(),
+      lastObstacleSpawn: now,
       circles: [
         { angle: Math.PI * 1.5, direction: 'cw', color: COLORS.CIRCLE_1 },
         { angle: Math.PI * 0.5, direction: 'cw', color: COLORS.CIRCLE_2 },
@@ -235,25 +243,42 @@ export default function DuetGame() {
       powerUps: [],
       particles: [],
       comboCount: 0,
-      lastSuccessTime: Date.now(),
+      lastSuccessTime: now,
       activeShield: false,
       slowMoEndTime: 0,
       difficultyWave: 0,
     };
 
-    console.log('[v0] Setting gameStatus to playing');
-    setGameStatus('playing');
-    setElapsedTime(0);
+    console.log('[v0] Updated gameStateRef:', {
+      isPlaying: gameStateRef.current.isPlaying,
+      startTime: gameStateRef.current.startTime,
+      now: now
+    });
+
+    // Enable audio
+    setAudioEnabled(true);
+    
+    // Force immediate re-render
     forceUpdate((n) => n + 1);
     
-    console.log('[v0] Game should now be playing');
+    // Then update game status to trigger game loop
+    setTimeout(() => {
+      console.log('[v0] Setting gameStatus to playing');
+      setGameStatus('playing');
+      forceUpdate((n) => n + 1);
+    }, 0);
+    
+    console.log('[v0] Game initialization complete - game should start now');
   }, []);
 
   useEffect(() => {
-    if (!pendingCallsId) return;
+    if (!pendingCallsId) {
+      console.log('[v0] No pending calls ID, skipping status check');
+      return;
+    }
 
     console.log('[v0] Checking calls status for:', pendingCallsId);
-    console.log('[v0] Current callsStatus:', callsStatus);
+    console.log('[v0] Current callsStatus:', JSON.stringify(callsStatus, null, 2));
     console.log('[v0] callsStatus?.status:', callsStatus?.status);
     console.log('[v0] callsStatus?.receipts:', callsStatus?.receipts);
     console.log('[v0] isCheckingStatus:', isCheckingStatus);
@@ -263,34 +288,40 @@ export default function DuetGame() {
       return;
     }
 
-    const status = callsStatus?.status?.toUpperCase() || '';
+    const status = callsStatus?.status ? callsStatus.status.toUpperCase() : '';
     console.log('[v0] Normalized status:', status);
 
-    // Check for confirmation - multiple possible states
-    const hasReceipts = callsStatus?.receipts && callsStatus.receipts.length > 0;
-    const hasAnyReceipt = Array.isArray(callsStatus?.receipts) && callsStatus.receipts.some(r => r);
+    // Check for successful transaction completion
+    const hasReceipts = callsStatus?.receipts && Array.isArray(callsStatus.receipts) && callsStatus.receipts.length > 0;
+    const hasAnyValidReceipt = hasReceipts && callsStatus.receipts.some(r => r !== null && r !== undefined);
+    
+    // Success conditions: CONFIRMED, SUCCESS status, or has valid receipts
     const isConfirmed = 
       status === 'CONFIRMED' || 
       status === 'SUCCESS' ||
-      hasReceipts ||
-      hasAnyReceipt;
+      status === 'COMPLETED' ||
+      hasAnyValidReceipt;
 
-    console.log('[v0] Debug - hasReceipts:', hasReceipts, 'hasAnyReceipt:', hasAnyReceipt, 'status:', status, 'isConfirmed:', isConfirmed);
+    console.log('[v0] Debug check:');
+    console.log('[v0] - status:', status);
+    console.log('[v0] - hasReceipts:', hasReceipts);
+    console.log('[v0] - hasAnyValidReceipt:', hasAnyValidReceipt);
+    console.log('[v0] - isConfirmed:', isConfirmed);
 
     if (isConfirmed) {
-      console.log('[v0] Transaction CONFIRMED! Starting game...');
+      console.log('[v0] ✅ Transaction CONFIRMED! Starting game now...');
       startGameAfterConfirmation();
-    } else if (status === 'FAILED' || status?.includes('FAILED') || status?.includes('ERROR')) {
-      console.log('[v0] Transaction FAILED with status:', status);
+    } else if (status === 'FAILED' || status?.includes('FAILED') || status?.includes('ERROR') || status?.includes('REJECTED')) {
+      console.log('[v0] ❌ Transaction FAILED with status:', status);
       setBalanceError('Transaction failed. Please try again.');
       setPendingCallsId(null);
       setIsConfirmingTransaction(false);
       gameStateRef.current.isTransactionPending = false;
       forceUpdate((n) => n + 1);
     } else {
-      console.log('[v0] Transaction pending with status:', status);
+      console.log('[v0] ⏳ Transaction pending with status:', status);
     }
-  }, [callsStatus, pendingCallsId]);
+  }, [callsStatus, pendingCallsId, startGameAfterConfirmation]);
 
   const startGame = async (): Promise<void> => {
     if (!isConnected) {
@@ -471,27 +502,33 @@ export default function DuetGame() {
   useEffect(() => {
     console.log('[v0] gameStatus changed to:', gameStatus);
     console.log('[v0] gameStateRef.current.isPlaying:', gameStateRef.current.isPlaying);
+    console.log('[v0] Rendering game with status:', gameStatus);
 
     if (gameStatus === 'playing' && gameStateRef.current.isPlaying) {
-      console.log('[v0] Conditions met, starting game loop...');
+      console.log('[v0] ✅ Conditions met for game loop - gameStatus=playing AND isPlaying=true');
       lastFrameTimeRef.current = 0;
       
-      // Ensure we're ready to render
-      const startGameLoop = () => {
-        if (gameStateRef.current.isPlaying && gameStatus === 'playing') {
-          console.log('[v0] Game loop starting');
-          animationFrameRef.current = requestAnimationFrame(gameLoop);
-        }
+      // Start the game loop immediately with requestAnimationFrame
+      const startLoop = () => {
+        console.log('[v0] Game loop requestAnimationFrame started');
+        animationFrameRef.current = requestAnimationFrame(gameLoop);
       };
       
-      startGameLoop();
+      // Use setTimeout to ensure React has finished rendering
+      const timeoutId = setTimeout(startLoop, 0);
 
       return () => {
-        console.log('[v0] Cleaning up game loop');
+        clearTimeout(timeoutId);
+        console.log('[v0] Cleaning up game loop effect');
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
         }
       };
+    } else {
+      console.log('[v0] Game loop conditions not met - cancelling animation frame');
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     }
   }, [gameStatus, gameLoop]);
 
