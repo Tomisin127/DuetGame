@@ -1,0 +1,41 @@
+{
+  "[project]/src/components/game/DuetGame.tsx [app-client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/src/components/game/DuetGame.tsx [app-client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/node_modules__pnpm_798423fa._.js",
+      "static/chunks/src_49f8c48c._.js",
+      "static/chunks/899a3_viem__esm_497b6e61._.js",
+      "static/chunks/node_modules__pnpm_77715f3a._.js",
+      "static/chunks/src_components_game_DuetGame_tsx_94c7f463._.js",
+      "static/chunks/899a3_viem__esm_006795e5._.js",
+      "static/chunks/899a3_viem__esm_utils_ccip_fb73a996.js",
+      "static/chunks/node_modules__pnpm_7eba52ce._.js",
+      "static/chunks/6ff39_@noble_curves_esm_secp256k1_fb73a996.js"
+    ]
+  },
+  "[project]/src/lib/web3/provider.tsx [app-client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/src/lib/web3/provider.tsx [app-client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/node_modules__pnpm_0422f5c6._.js",
+      "static/chunks/node_modules__pnpm_638ba169._.js",
+      "static/chunks/src_lib_web3_provider_tsx_b200ee27._.js",
+      "static/chunks/src_lib_web3_provider_tsx_94c7f463._.js",
+      "static/chunks/node_modules__pnpm_c8400e96._.js",
+      "static/chunks/60c7f_@coinbase_wallet-sdk_dist_bbb66289._.js",
+      "static/chunks/899a3_viem__esm_utils_e3dbe9ab._.js",
+      "static/chunks/899a3_viem__esm_actions_6d25d5ad._.js",
+      "static/chunks/899a3_viem__esm_account-abstraction_c2d3d0f7._.js",
+      "static/chunks/899a3_viem__esm_6017cedb._.js",
+      "static/chunks/node_modules__pnpm_d6a81fae._.js",
+      "static/chunks/node_modules__pnpm_0a4a1641._.js",
+      "static/chunks/node_modules__pnpm_e5987e77._.js",
+      "static/chunks/60c7f_@coinbase_wallet-sdk_dist_index_084e4364.js",
+      "static/chunks/899a3_viem__esm_ee446b3e._.js",
+      "static/chunks/899a3_viem__esm_utils_ccip_e3adc76d.js",
+      "static/chunks/068b7_@coinbase_wallet-sdk_dist_96e332ac._.js",
+      "static/chunks/222b1_readable-stream_6315a988._.js",
+      "static/chunks/node_modules__pnpm_3b40a3b9._.js",
+      "static/chunks/068b7_@coinbase_wallet-sdk_dist_index_a8ce08c6.js"
+    ]
+  }
+}

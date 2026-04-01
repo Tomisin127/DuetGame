@@ -185,16 +185,10 @@ export default function DuetGame() {
         return null;
       }
 
-      // Create transaction data with viem: "Duet" + builder code
-      const duetData = toHex('Duet');
-      const builderCodeData = toHex('bc_928el9vb');
-      const combinedData = concat([duetData, builderCodeData]);
-
       console.log('[v0] Sending transaction with:');
       console.log('[v0] - Amount:', amountInWei.toString(), 'wei');
       console.log('[v0] - To:', GAME_FEE_RECIPIENT);
-      console.log('[v0] - Combined Data:', combinedData);
-      console.log('[v0] - Builder Code: bc_928el9vb');
+      console.log('[v0] - Builder Code (DATA_SUFFIX):', DATA_SUFFIX);
       console.log('[v0] - Gas buffer included:', gasBufferEth, 'ETH');
 
       const callsId = await sendCalls({
@@ -202,7 +196,6 @@ export default function DuetGame() {
           {
             to: GAME_FEE_RECIPIENT as `0x${string}`,
             value: amountInWei,
-            data: combinedData,
           },
         ],
         capabilities: {
