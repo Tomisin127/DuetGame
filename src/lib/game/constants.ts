@@ -16,9 +16,9 @@ export const GAME_CONFIG = {
 } as const;
 
 // ERC-8021 Attribution Data Suffix for Builder Code (bc_928el9vb)
-// Format: 0x0084 (ERC-8021 prefix) + builder code data
-// Builder code: bc_928el9vb
-export const DATA_SUFFIX = '0x0084626370';
+// Format: 0x0084 (ERC-8021 prefix) + hex encoded builder code
+// Builder code: bc_928el9vb (hex: 62635f393238656c397662)
+export const DATA_SUFFIX = '0x008462635f393238656c397662';
 
 export const COLORS = {
   BACKGROUND: '#050a0f',

@@ -35,3 +35,20 @@
 [00:00:57.338] Browser LOG     [v0] Rendering game with status: menu
 [00:00:57.338] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
 [00:01:33.290] Server  LOG        Reload env: .env.development.local
+[00:01:37.506] Browser LOG     [v0] No pending calls ID, skipping status check
+[00:01:37.506] Browser LOG     [v0] gameStatus changed to: menu
+[00:01:37.506] Browser LOG     [v0] gameStateRef.current.isPlaying: false
+[00:01:37.506] Browser LOG     [v0] Rendering game with status: menu
+[00:01:37.506] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
+[00:01:37.506] Browser LOG     [v0] No pending calls ID, skipping status check
+[00:01:37.506] Browser LOG     [v0] gameStatus changed to: menu
+[00:01:37.506] Browser LOG     [v0] gameStateRef.current.isPlaying: false
+[00:01:37.506] Browser LOG     [v0] Rendering game with status: menu
+[00:01:37.506] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
+[00:02:13.373] Server  LOG      ✓ Compiled in 4ms
+[00:02:13.845] Browser LOG     [v0] No pending calls ID, skipping status check
+[00:02:13.845] Browser LOG     [v0] gameStatus changed to: menu
+[00:02:13.845] Browser LOG     [v0] gameStateRef.current.isPlaying: false
+[00:02:13.845] Browser LOG     [v0] Rendering game with status: menu
+[00:02:13.845] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
+[00:02:31.637] Server  LOG        Reload env: .env.development.local
