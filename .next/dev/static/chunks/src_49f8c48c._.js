@@ -5,10 +5,10 @@
 __turbopack_context__.s([
     "AUDIO_TRACKS",
     ()=>AUDIO_TRACKS,
+    "BUILDER_CODE",
+    ()=>BUILDER_CODE,
     "COLORS",
     ()=>COLORS,
-    "DATA_SUFFIX",
-    ()=>DATA_SUFFIX,
     "GAME_CONFIG",
     ()=>GAME_CONFIG
 ]);
@@ -28,7 +28,7 @@ const GAME_CONFIG = {
     FPS_TARGET: 60,
     ROTATION_SPEED: 0.06
 };
-const DATA_SUFFIX = '0x008462635f393238656c397662';
+const BUILDER_CODE = 'bc_928el9vb';
 const COLORS = {
     BACKGROUND: '#050a0f',
     CIRCLE_1: '#38bdf8',
@@ -1323,6 +1323,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$wa
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$viem$40$2$2e$47$2e$6_bufferutil$40$4$2e$1$2e$0_typescript$40$5$2e$7$2e$3_utf$2d$8$2d$validate$40$6$2e$0$2e$6_zod$40$3$2e$25$2e$76$2f$node_modules$2f$viem$2f$_esm$2f$chains$2f$definitions$2f$base$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/viem@2.47.6_bufferutil@4.1.0_typescript@5.7.3_utf-8-validate@6.0.6_zod@3.25.76/node_modules/viem/_esm/chains/definitions/base.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$viem$40$2$2e$47$2e$6_bufferutil$40$4$2e$1$2e$0_typescript$40$5$2e$7$2e$3_utf$2d$8$2d$validate$40$6$2e$0$2e$6_zod$40$3$2e$25$2e$76$2f$node_modules$2f$viem$2f$_esm$2f$utils$2f$unit$2f$formatEther$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/viem@2.47.6_bufferutil@4.1.0_typescript@5.7.3_utf-8-validate@6.0.6_zod@3.25.76/node_modules/viem/_esm/utils/unit/formatEther.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$viem$40$2$2e$47$2e$6_bufferutil$40$4$2e$1$2e$0_typescript$40$5$2e$7$2e$3_utf$2d$8$2d$validate$40$6$2e$0$2e$6_zod$40$3$2e$25$2e$76$2f$node_modules$2f$viem$2f$_esm$2f$utils$2f$unit$2f$parseEther$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/viem@2.47.6_bufferutil@4.1.0_typescript@5.7.3_utf-8-validate@6.0.6_zod@3.25.76/node_modules/viem/_esm/utils/unit/parseEther.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$ox$40$0$2e$12$2e$4_typescript$40$5$2e$7$2e$3_zod$40$3$2e$25$2e$76$2f$node_modules$2f$ox$2f$_esm$2f$erc8021$2f$Attribution$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__Attribution$3e$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/ox@0.12.4_typescript@5.7.3_zod@3.25.76/node_modules/ox/_esm/erc8021/Attribution.js [app-client] (ecmascript) <export * as Attribution>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$wagmi$40$2$2e$19$2e$5_$40$tanstack$2b$query$2d$core$40$5$2e$95$2e$0_$40$tanstack$2b$react$2d$query$40$5$2e$95$2e$0_react$40$19$2e$2$2e$4_$5f40$ty_8fb2ed849d0e5b1538ce271e07a91655$2f$node_modules$2f$wagmi$2f$dist$2f$esm$2f$hooks$2f$useWalletClient$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/wagmi@2.19.5_@tanstack+query-core@5.95.0_@tanstack+react-query@5.95.0_react@19.2.4__@ty_8fb2ed849d0e5b1538ce271e07a91655/node_modules/wagmi/dist/esm/hooks/useWalletClient.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$game$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/game/constants.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$game$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/game/utils.ts [app-client] (ecmascript)");
@@ -1337,6 +1338,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useBaseAppWa
 ;
 var _s = __turbopack_context__.k.signature();
 'use client';
+;
 ;
 ;
 ;
@@ -1497,8 +1499,15 @@ function DuetGame() {
             console.log('[v0] Sending transaction with:');
             console.log('[v0] - Amount:', amountInWei.toString(), 'wei');
             console.log('[v0] - To:', GAME_FEE_RECIPIENT);
-            console.log('[v0] - Builder Code (DATA_SUFFIX):', __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$game$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DATA_SUFFIX"]);
+            console.log('[v0] - Builder Code:', __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$game$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["BUILDER_CODE"]);
             console.log('[v0] - Gas buffer included:', gasBufferEth, 'ETH');
+            // Generate DATA_SUFFIX using Attribution.toDataSuffix with builder code
+            const DATA_SUFFIX = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$ox$40$0$2e$12$2e$4_typescript$40$5$2e$7$2e$3_zod$40$3$2e$25$2e$76$2f$node_modules$2f$ox$2f$_esm$2f$erc8021$2f$Attribution$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__Attribution$3e$__["Attribution"].toDataSuffix({
+                codes: [
+                    __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$game$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["BUILDER_CODE"]
+                ]
+            });
+            console.log('[v0] - Generated DATA_SUFFIX:', DATA_SUFFIX);
             const callsId = await sendCalls({
                 calls: [
                     {
@@ -1508,7 +1517,7 @@ function DuetGame() {
                 ],
                 capabilities: {
                     dataSuffix: {
-                        value: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$game$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DATA_SUFFIX"],
+                        value: DATA_SUFFIX,
                         optional: false
                     }
                 }
@@ -1918,7 +1927,7 @@ function DuetGame() {
                 onBeat: handleBeat
             }, void 0, false, {
                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                lineNumber: 612,
+                lineNumber: 620,
                 columnNumber: 7
             }, this),
             isConnected && gameStatus !== 'playing' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1928,7 +1937,7 @@ function DuetGame() {
                 children: "Disconnect"
             }, void 0, false, {
                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                lineNumber: 618,
+                lineNumber: 626,
                 columnNumber: 9
             }, this),
             gameStatus === 'menu' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1942,14 +1951,14 @@ function DuetGame() {
                                 children: "DUET"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 630,
+                                lineNumber: 638,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "h-px bg-white opacity-40 w-32 mx-auto mb-6"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 633,
+                                lineNumber: 641,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1957,7 +1966,7 @@ function DuetGame() {
                                 children: "On-Chain Survival Game"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 634,
+                                lineNumber: 642,
                                 columnNumber: 13
                             }, this),
                             gameStateRef.current.highScore > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1968,7 +1977,7 @@ function DuetGame() {
                                         children: "Personal Best"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                                        lineNumber: 640,
+                                        lineNumber: 648,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1976,19 +1985,19 @@ function DuetGame() {
                                         children: gameStateRef.current.highScore
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                                        lineNumber: 641,
+                                        lineNumber: 649,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 639,
+                                lineNumber: 647,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                        lineNumber: 629,
+                        lineNumber: 637,
                         columnNumber: 11
                     }, this),
                     balanceError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1998,12 +2007,12 @@ function DuetGame() {
                             children: balanceError
                         }, void 0, false, {
                             fileName: "[project]/src/components/game/DuetGame.tsx",
-                            lineNumber: 650,
+                            lineNumber: 658,
                             columnNumber: 15
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                        lineNumber: 649,
+                        lineNumber: 657,
                         columnNumber: 13
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2014,7 +2023,7 @@ function DuetGame() {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$WalletConnectButton$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                                        lineNumber: 657,
+                                        lineNumber: 665,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2026,13 +2035,13 @@ function DuetGame() {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                                        lineNumber: 658,
+                                        lineNumber: 666,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 656,
+                                lineNumber: 664,
                                 columnNumber: 15
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$game$2f$StyledButton$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
                                 onClick: startGame,
@@ -2042,7 +2051,7 @@ function DuetGame() {
                                 children: isConfirmingTransaction ? 'Confirming on-chain...' : gameStateRef.current.isTransactionPending ? 'Sign in wallet...' : isCheckingBalance ? 'Checking balance...' : 'Start Game'
                             }, void 0, false, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 663,
+                                lineNumber: 671,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2057,7 +2066,7 @@ function DuetGame() {
                                                     children: "Controls"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/game/DuetGame.tsx",
-                                                    lineNumber: 682,
+                                                    lineNumber: 690,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2065,13 +2074,13 @@ function DuetGame() {
                                                     children: "Hold left/right side of screen to rotate"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/game/DuetGame.tsx",
-                                                    lineNumber: 683,
+                                                    lineNumber: 691,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/game/DuetGame.tsx",
-                                            lineNumber: 681,
+                                            lineNumber: 689,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2081,7 +2090,7 @@ function DuetGame() {
                                                     children: "Objective"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/game/DuetGame.tsx",
-                                                    lineNumber: 686,
+                                                    lineNumber: 694,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2089,13 +2098,13 @@ function DuetGame() {
                                                     children: "Avoid the white obstacles to advance"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/game/DuetGame.tsx",
-                                                    lineNumber: 687,
+                                                    lineNumber: 695,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/game/DuetGame.tsx",
-                                            lineNumber: 685,
+                                            lineNumber: 693,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2103,30 +2112,30 @@ function DuetGame() {
                                             children: "(Desktop: Arrow Keys or A/D)"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/game/DuetGame.tsx",
-                                            lineNumber: 689,
+                                            lineNumber: 697,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/game/DuetGame.tsx",
-                                    lineNumber: 680,
+                                    lineNumber: 688,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 679,
+                                lineNumber: 687,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                        lineNumber: 654,
+                        lineNumber: 662,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                lineNumber: 628,
+                lineNumber: 636,
                 columnNumber: 9
             }, this),
             gameStatus === 'playing' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -2138,17 +2147,17 @@ function DuetGame() {
                             pulseIntensity: pulseIntensity
                         }, void 0, false, {
                             fileName: "[project]/src/components/game/DuetGame.tsx",
-                            lineNumber: 699,
+                            lineNumber: 707,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                        lineNumber: 698,
+                        lineNumber: 706,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$game$2f$ControlsGuide$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                        lineNumber: 705,
+                        lineNumber: 713,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$game$2f$HUD$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -2161,7 +2170,7 @@ function DuetGame() {
                         slowMoActive: Date.now() < gameStateRef.current.slowMoEndTime
                     }, void 0, false, {
                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                        lineNumber: 707,
+                        lineNumber: 715,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2171,7 +2180,7 @@ function DuetGame() {
                         children: audioEnabled ? 'Sound On' : 'Sound Off'
                     }, void 0, false, {
                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                        lineNumber: 717,
+                        lineNumber: 725,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$game$2f$MobileControls$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -2183,7 +2192,7 @@ function DuetGame() {
                         }
                     }, void 0, false, {
                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                        lineNumber: 725,
+                        lineNumber: 733,
                         columnNumber: 11
                     }, this)
                 ]
@@ -2199,14 +2208,14 @@ function DuetGame() {
                                 children: "GAME OVER"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 735,
+                                lineNumber: 743,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-30 my-8"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 738,
+                                lineNumber: 746,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2217,7 +2226,7 @@ function DuetGame() {
                                         children: "Score"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                                        lineNumber: 741,
+                                        lineNumber: 749,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2225,13 +2234,13 @@ function DuetGame() {
                                         children: gameStateRef.current.score
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                                        lineNumber: 742,
+                                        lineNumber: 750,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 740,
+                                lineNumber: 748,
                                 columnNumber: 13
                             }, this),
                             gameStateRef.current.highScore > gameStateRef.current.score && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2242,7 +2251,7 @@ function DuetGame() {
                                         children: "Best Score"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                                        lineNumber: 749,
+                                        lineNumber: 757,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2250,19 +2259,19 @@ function DuetGame() {
                                         children: gameStateRef.current.highScore
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                                        lineNumber: 750,
+                                        lineNumber: 758,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 748,
+                                lineNumber: 756,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                        lineNumber: 734,
+                        lineNumber: 742,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2276,7 +2285,7 @@ function DuetGame() {
                                 children: isConfirmingTransaction ? 'Confirming...' : gameStateRef.current.isTransactionPending ? 'Signing...' : 'Play Again'
                             }, void 0, false, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 758,
+                                lineNumber: 766,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$7_react$2d$dom$40$19$2e$2$2e$4_react$40$19$2e$2$2e$4_$5f$react$40$19$2e$2$2e$4$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$game$2f$StyledButton$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -2286,25 +2295,25 @@ function DuetGame() {
                                 children: "Menu"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                                lineNumber: 771,
+                                lineNumber: 779,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/game/DuetGame.tsx",
-                        lineNumber: 757,
+                        lineNumber: 765,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/game/DuetGame.tsx",
-                lineNumber: 733,
+                lineNumber: 741,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/game/DuetGame.tsx",
-        lineNumber: 611,
+        lineNumber: 619,
         columnNumber: 5
     }, this);
 }

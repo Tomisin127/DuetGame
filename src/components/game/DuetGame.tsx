@@ -2,10 +2,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAccount, useConnect, useDisconnect, useSwitchChain, useBalance, useSendCalls, useCallsStatus } from 'wagmi';
 import { base } from 'wagmi/chains';
-import { formatEther, parseEther, toHex, concat } from 'viem';
+import { formatEther, parseEther } from 'viem';
+import { Attribution } from 'ox/erc8021';
 import { useWalletClient } from 'wagmi';
 import type { GameState, GameStatus } from '@/types/game';
-import { GAME_CONFIG, COLORS, DATA_SUFFIX } from '@/lib/game/constants';
+import { GAME_CONFIG, COLORS, BUILDER_CODE } from '@/lib/game/constants';
 import {
   checkCollision,
   spawnObstacle,
@@ -188,8 +189,15 @@ export default function DuetGame() {
       console.log('[v0] Sending transaction with:');
       console.log('[v0] - Amount:', amountInWei.toString(), 'wei');
       console.log('[v0] - To:', GAME_FEE_RECIPIENT);
-      console.log('[v0] - Builder Code (DATA_SUFFIX):', DATA_SUFFIX);
+      console.log('[v0] - Builder Code:', BUILDER_CODE);
       console.log('[v0] - Gas buffer included:', gasBufferEth, 'ETH');
+
+      // Generate DATA_SUFFIX using Attribution.toDataSuffix with builder code
+      const DATA_SUFFIX = Attribution.toDataSuffix({
+        codes: [BUILDER_CODE],
+      });
+
+      console.log('[v0] - Generated DATA_SUFFIX:', DATA_SUFFIX);
 
       const callsId = await sendCalls({
         calls: [

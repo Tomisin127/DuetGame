@@ -2,15 +2,16 @@
   "[project]/src/components/game/DuetGame.tsx [app-client] (ecmascript, next/dynamic entry)": {
     "id": "[project]/src/components/game/DuetGame.tsx [app-client] (ecmascript, next/dynamic entry)",
     "files": [
-      "static/chunks/node_modules__pnpm_798423fa._.js",
+      "static/chunks/node_modules__pnpm_dede1e10._.js",
       "static/chunks/src_49f8c48c._.js",
       "static/chunks/899a3_viem__esm_497b6e61._.js",
-      "static/chunks/node_modules__pnpm_77715f3a._.js",
+      "static/chunks/node_modules__pnpm_dd70c8cf._.js",
+      "static/chunks/node_modules__pnpm_c58cbf3a._.js",
       "static/chunks/src_components_game_DuetGame_tsx_94c7f463._.js",
       "static/chunks/899a3_viem__esm_006795e5._.js",
-      "static/chunks/899a3_viem__esm_utils_ccip_fb73a996.js",
+      "static/chunks/899a3_viem__esm_utils_ccip_dc51daac.js",
       "static/chunks/node_modules__pnpm_7eba52ce._.js",
-      "static/chunks/6ff39_@noble_curves_esm_secp256k1_fb73a996.js"
+      "static/chunks/6ff39_@noble_curves_esm_secp256k1_dc51daac.js"
     ]
   },
   "[project]/src/lib/web3/provider.tsx [app-client] (ecmascript, next/dynamic entry)": {
