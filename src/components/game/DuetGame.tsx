@@ -279,15 +279,10 @@ export default function DuetGame() {
     // Enable audio
     setAudioEnabled(true);
     
-    // Force immediate re-render
+    // Force immediate re-render and update game status together
+    console.log('[v0] Setting gameStatus to playing');
+    setGameStatus('playing');
     forceUpdate((n) => n + 1);
-    
-    // Then update game status to trigger game loop
-    setTimeout(() => {
-      console.log('[v0] Setting gameStatus to playing');
-      setGameStatus('playing');
-      forceUpdate((n) => n + 1);
-    }, 0);
     
     console.log('[v0] Game initialization complete - game should start now');
   }, []);
