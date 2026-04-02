@@ -84,6 +84,13 @@ export default function DuetGame() {
     ],
     isTransactionPending: false,
     lastObstacleSpawn: 0,
+    powerUps: [],
+    particles: [],
+    comboCount: 0,
+    lastSuccessTime: 0,
+    activeShield: false,
+    slowMoEndTime: 0,
+    difficultyWave: 0,
   });
 
   const [, forceUpdate] = useState<number>(0);
