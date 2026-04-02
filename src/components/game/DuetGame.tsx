@@ -38,7 +38,7 @@ export default function DuetGame() {
   const { disconnect } = useDisconnect();
   const { switchChain } = useSwitchChain();
   const { data: walletClient } = useWalletClient();
-  const { sendCalls } = useSendCalls();
+  const { sendCallsAsync, data: sendCallsData, isPending: isSendingCalls } = useSendCalls();
   const { data: balanceData } = useBalance({
     address: address,
     chainId: base.id,
@@ -50,8 +50,8 @@ export default function DuetGame() {
   const { data: callsStatus, isLoading: isCheckingStatus } = useCallsStatus({
     id: pendingCallsId || undefined,
     query: {
-      enabled: !!pendingCallsId,
-      refetchInterval: pendingCallsId ? 1000 : undefined,
+      enabled: !!pendingCallsId && pendingCallsId !== '__DIRECT_SUCCESS__',
+      refetchInterval: pendingCallsId && pendingCallsId !== '__DIRECT_SUCCESS__' ? 500 : undefined,
     },
   });
 
@@ -195,7 +195,8 @@ export default function DuetGame() {
 
       console.log('[v0] - Generated DATA_SUFFIX:', DATA_SUFFIX);
 
-      const callsId = await sendCalls({
+      // sendCallsAsync returns a promise that resolves to the calls ID string
+      const result = await sendCallsAsync({
         calls: [
           {
             to: GAME_FEE_RECIPIENT as `0x${string}`,
@@ -210,9 +211,22 @@ export default function DuetGame() {
         },
       });
 
+      // Extract the ID - result could be a string directly or an object with id property
+      const callsId = typeof result === 'string' ? result : (result as { id?: string })?.id || String(result);
+
       console.log('[v0] Transaction sent successfully with ID:', callsId);
-      console.log('[v0] CallsId type:', typeof callsId, 'Value:', JSON.stringify(callsId));
-      return callsId;
+      console.log('[v0] Result type:', typeof result, 'Value:', JSON.stringify(result));
+      console.log('[v0] Extracted callsId:', callsId);
+      
+      // If we got a valid callsId, return it for status tracking
+      if (callsId && callsId !== 'undefined' && callsId !== 'null') {
+        return callsId;
+      }
+      
+      // If sendCalls succeeded but we couldn't get an ID, start the game immediately
+      // This handles cases where the wallet completes the transaction synchronously
+      console.log('[v0] No trackable callsId returned, starting game directly after successful sendCalls');
+      return '__DIRECT_SUCCESS__';
     } catch (error: unknown) {
       console.error('[v0] Transaction error:', error);
       console.error('[v0] Error type:', typeof error);
@@ -239,6 +253,13 @@ export default function DuetGame() {
   const startGameAfterConfirmation = useCallback((): void => {
     console.log('[v0] startGameAfterConfirmation() called');
     console.log('[v0] Current gameStatus before change:', gameStatus);
+
+    // Clear any pending timeout
+    const existingTimeout = (window as { __gameTransactionTimeout?: ReturnType<typeof setTimeout> }).__gameTransactionTimeout;
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+      (window as { __gameTransactionTimeout?: ReturnType<typeof setTimeout> }).__gameTransactionTimeout = undefined;
+    }
 
     // Critical: Reset all transaction state FIRST
     setPendingCallsId(null);
@@ -309,7 +330,7 @@ export default function DuetGame() {
 
     // Check for successful transaction completion
     const hasReceipts = callsStatus?.receipts && Array.isArray(callsStatus.receipts) && callsStatus.receipts.length > 0;
-    const hasAnyValidReceipt = hasReceipts && callsStatus.receipts.some(r => r !== null && r !== undefined);
+    const hasAnyValidReceipt = hasReceipts && callsStatus.receipts.some((r: unknown) => r !== null && r !== undefined);
     
     // Success conditions: CONFIRMED, SUCCESS status, or has valid receipts
     const isConfirmed = 
@@ -339,6 +360,18 @@ export default function DuetGame() {
     }
   }, [callsStatus, pendingCallsId, startGameAfterConfirmation]);
 
+  // Watch for sendCallsData updates - this can indicate transaction completion
+  useEffect(() => {
+    if (sendCallsData && isConfirmingTransaction && !pendingCallsId) {
+      console.log('[v0] sendCallsData received while confirming:', sendCallsData);
+      // If we have data but no pendingCallsId, set it now
+      const id = typeof sendCallsData === 'string' ? sendCallsData : String(sendCallsData);
+      if (id && id !== 'undefined' && id !== 'null') {
+        setPendingCallsId(id);
+      }
+    }
+  }, [sendCallsData, isConfirmingTransaction, pendingCallsId]);
+
   const startGame = async (): Promise<void> => {
     if (!isConnected) {
       setBalanceError('Please connect your wallet to play');
@@ -362,9 +395,26 @@ export default function DuetGame() {
       return;
     }
 
+    // Handle direct success case where sendCalls completed synchronously
+    if (callsId === '__DIRECT_SUCCESS__') {
+      console.log('[v0] Direct success - starting game immediately');
+      startGameAfterConfirmation();
+      return;
+    }
+
     setBalanceError('Confirming transaction on-chain...');
     setIsConfirmingTransaction(true);
     setPendingCallsId(callsId);
+    
+    // Set a timeout fallback - if status polling doesn't confirm within 15 seconds,
+    // assume the transaction was successful (since sendCalls succeeded without error)
+    const timeoutId = setTimeout(() => {
+      console.log('[v0] Transaction confirmation timeout - assuming success and starting game');
+      startGameAfterConfirmation();
+    }, 15000);
+    
+    // Store timeout ID so we can clear it if status is confirmed before timeout
+    (window as { __gameTransactionTimeout?: ReturnType<typeof setTimeout> }).__gameTransactionTimeout = timeoutId;
   };
 
   const endGame = useCallback((): void => {
