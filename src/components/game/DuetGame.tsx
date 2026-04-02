@@ -128,15 +128,13 @@ export default function DuetGame() {
       setWalletBalanceUSD(balanceInUSD.toFixed(2));
 
       const minimumEthRequired = MINIMUM_USD_REQUIRED / currentEthPrice;
-      // Add gas buffer (0.001 ETH ≈ $2.50 at $2500/ETH) for Base network transaction
-      const gasBufferEth = 0.001;
-      const totalEthNeeded = minimumEthRequired + gasBufferEth;
+      // Base network has extremely low gas costs, no significant buffer needed
+      const totalEthNeeded = minimumEthRequired;
       const totalUsdNeeded = totalEthNeeded * currentEthPrice;
 
       console.log('[v0] Balance check:');
       console.log('[v0] - Your balance:', balanceInEth.toFixed(6), 'ETH ($' + balanceInUSD.toFixed(2) + ')');
       console.log('[v0] - Transaction fee:', MINIMUM_USD_REQUIRED.toFixed(6), 'USD');
-      console.log('[v0] - Gas buffer:', gasBufferEth, 'ETH');
       console.log('[v0] - Total needed:', totalEthNeeded.toFixed(6), 'ETH ($' + totalUsdNeeded.toFixed(2) + ')');
 
       if (balanceInEth < totalEthNeeded) {
@@ -176,10 +174,9 @@ export default function DuetGame() {
       const amountInEth = MINIMUM_USD_REQUIRED / ethPrice;
       const amountInWei = parseEther(amountInEth.toFixed(18));
       
-      // Verify we have enough balance including gas
+      // Verify we have enough balance
       const currentBalance = balanceData ? parseFloat(formatEther(balanceData.value)) : 0;
-      const gasBufferEth = 0.001;
-      const totalNeeded = amountInEth + gasBufferEth;
+      const totalNeeded = amountInEth;
       
       if (currentBalance < totalNeeded) {
         setBalanceError(`Insufficient balance for transaction. Need ${totalNeeded.toFixed(6)} ETH, have ${currentBalance.toFixed(6)} ETH`);
@@ -190,7 +187,6 @@ export default function DuetGame() {
       console.log('[v0] - Amount:', amountInWei.toString(), 'wei');
       console.log('[v0] - To:', GAME_FEE_RECIPIENT);
       console.log('[v0] - Builder Code:', BUILDER_CODE);
-      console.log('[v0] - Gas buffer included:', gasBufferEth, 'ETH');
 
       // Generate DATA_SUFFIX using Attribution.toDataSuffix with builder code
       const DATA_SUFFIX = Attribution.toDataSuffix({
