@@ -29,7 +29,7 @@ import StyledButton from '@/components/game/StyledButton';
 import WalletConnectButton from '@/components/WalletConnectButton';
 import { useBaseAppWallet } from '@/hooks/useBaseAppWallet';
 
-const MINIMUM_USD_REQUIRED = 0.0001;
+const MINIMUM_USD_REQUIRED = 0.000001;
 const GAME_FEE_RECIPIENT = '0xEA549e458e77Fd93bf330e5EAEf730c50d8F5249';
 
 export default function DuetGame() {
