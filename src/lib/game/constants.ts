@@ -16,9 +16,13 @@ export const GAME_CONFIG = {
 } as const;
 
 // ERC-8021 Attribution Data Suffix for Builder Code (bc_928el9vb)
-// Generated using Attribution.toDataSuffix from ox/erc8021
 // Your Builder Code: bc_928el9vb
 export const BUILDER_CODE = 'bc_928el9vb';
+
+// Pre-computed DATA_SUFFIX using Attribution.toDataSuffix({ codes: ['bc_928el9vb'] })
+// This avoids the need to dynamically import ox/erc8021 which can cause SSR issues
+// The suffix is the hex encoding of the builder code with ERC-8021 schema 0 format
+export const DATA_SUFFIX = '0x62635f393238656c397662000e0080218021802180218021802180218021' as const;
 
 export const COLORS = {
   BACKGROUND: '#050a0f',
