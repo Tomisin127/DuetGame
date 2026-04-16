@@ -150,13 +150,6 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
         ctx.lineWidth = 2;
         ctx.stroke();
         ctx.shadowBlur = 0;
-
-        ctx.fillStyle = '#000000';
-        ctx.font = 'bold 10px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const typeChar = powerUp.type === 'shield' ? 'S' : powerUp.type === 'slowmo' ? 'T' : 'D';
-        ctx.fillText(typeChar, puX, puY);
       });
 
       // Particles

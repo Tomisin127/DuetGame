@@ -535,7 +535,7 @@ export default function DuetGame() {
               <div className="text-gray-400 text-xs text-center space-y-3">
                 <div>
                   <p className="font-medium text-white mb-1 uppercase tracking-widest">Controls</p>
-                  <p className="text-xs font-light">Tap left / right buttons at the bottom to rotate</p>
+                  <p className="text-xs font-light">Tap the left or right side of the screen to rotate</p>
                 </div>
                 <div>
                   <p className="font-medium text-white mb-1 uppercase tracking-widest">Objective</p>
