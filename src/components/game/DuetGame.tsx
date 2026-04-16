@@ -1,15 +1,13 @@
 'use client'
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useAccount, useConnect, useDisconnect, useSwitchChain, useBalance, useSendCalls, useCallsStatus } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useSwitchChain, useBalance, useSendCalls } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { formatEther, parseEther } from 'viem';
-import { useWalletClient } from 'wagmi';
 import type { GameState, GameStatus } from '@/types/game';
 import { GAME_CONFIG, COLORS, BUILDER_CODE, DATA_SUFFIX } from '@/lib/game/constants';
 import {
   checkCollision,
   spawnObstacle,
-  updateObstacles,
   calculateDifficulty,
   spawnPowerUp,
   checkPowerUpCollision,
@@ -22,52 +20,33 @@ import GameCanvas from '@/components/game/GameCanvas';
 import HUD from '@/components/game/HUD';
 import MobileControls from '@/components/game/MobileControls';
 import AudioManager from '@/components/game/AudioManager';
-import ControlsGuide from '@/components/game/ControlsGuide';
-import WalletDisplay from '@/components/game/WalletDisplay';
+import FullscreenButton from '@/components/game/FullscreenButton';
 import StyledButton from '@/components/game/StyledButton';
 import WalletConnectButton from '@/components/WalletConnectButton';
-import { useBaseAppWallet } from '@/hooks/useBaseAppWallet';
 
 const MINIMUM_USD_REQUIRED = 0.000001;
 const GAME_FEE_RECIPIENT = '0xEA549e458e77Fd93bf330e5EAEf730c50d8F5249';
 
 export default function DuetGame() {
   const { address, isConnected, chain } = useAccount();
-  const { connect, connectors } = useConnect();
+  const { connectors } = useConnect();
   const { disconnect } = useDisconnect();
   const { switchChain } = useSwitchChain();
-  const { data: walletClient } = useWalletClient();
-  const { sendCallsAsync, data: sendCallsData, isPending: isSendingCalls } = useSendCalls();
+  const { sendCallsAsync } = useSendCalls();
   const { data: balanceData } = useBalance({
     address: address,
     chainId: base.id,
-  });
-
-  const [pendingCallsId, setPendingCallsId] = useState<string | null>(null);
-  const [isConfirmingTransaction, setIsConfirmingTransaction] = useState<boolean>(false);
-
-  const { data: callsStatus, isLoading: isCheckingStatus } = useCallsStatus({
-    id: pendingCallsId || undefined,
-    query: {
-      enabled: !!pendingCallsId && pendingCallsId !== '__DIRECT_SUCCESS__',
-      refetchInterval: pendingCallsId && pendingCallsId !== '__DIRECT_SUCCESS__' ? 500 : undefined,
-    },
   });
 
   const [gameStatus, setGameStatus] = useState<GameStatus>('menu');
   const [pulseIntensity, setPulseIntensity] = useState<number>(0);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [isCheckingBalance, setIsCheckingBalance] = useState<boolean>(false);
+  const [isSigningTx, setIsSigningTx] = useState<boolean>(false);
   const [balanceError, setBalanceError] = useState<string>('');
 
   const [ethPrice, setEthPrice] = useState<number>(2500);
-  const [walletBalance, setWalletBalance] = useState<string>('0.0000');
-  const [walletBalanceUSD, setWalletBalanceUSD] = useState<string>('0.00');
   const [audioEnabled, setAudioEnabled] = useState<boolean>(false);
-  const [audioReady, setAudioReady] = useState<boolean>(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const { isBaseApp, autoConnect } = useBaseAppWallet();
 
   const gameStateRef = useRef<GameState>({
     isPlaying: false,
@@ -104,7 +83,7 @@ export default function DuetGame() {
       const data: { ethPrice: number } = await response.json();
       return data.ethPrice;
     } catch (error) {
-      console.error('Failed to fetch ETH price:', error);
+      console.error('[v0] Failed to fetch ETH price:', error);
       return 2500;
     }
   };
@@ -123,36 +102,26 @@ export default function DuetGame() {
       setEthPrice(currentEthPrice);
 
       if (chain?.id !== base.id) {
-        await switchChain?.({ chainId: base.id });
+        try {
+          await switchChain?.({ chainId: base.id });
+        } catch (e) {
+          console.warn('[v0] Could not switch chain:', e);
+        }
       }
 
-      // Get fresh balance data with a small delay to ensure latest balance
       const balanceInEth = balanceData ? parseFloat(formatEther(balanceData.value)) : 0;
-      const balanceInUSD = balanceInEth * currentEthPrice;
-
-      setWalletBalance(balanceInEth.toFixed(6));
-      setWalletBalanceUSD(balanceInUSD.toFixed(2));
-
       const minimumEthRequired = MINIMUM_USD_REQUIRED / currentEthPrice;
-      // Base network has extremely low gas costs, no significant buffer needed
-      const totalEthNeeded = minimumEthRequired;
-      const totalUsdNeeded = totalEthNeeded * currentEthPrice;
 
-      console.log('[v0] Balance check:');
-      console.log('[v0] - Your balance:', balanceInEth.toFixed(6), 'ETH ($' + balanceInUSD.toFixed(2) + ')');
-      console.log('[v0] - Transaction fee:', MINIMUM_USD_REQUIRED.toFixed(6), 'USD');
-      console.log('[v0] - Total needed:', totalEthNeeded.toFixed(6), 'ETH ($' + totalUsdNeeded.toFixed(2) + ')');
-
-      if (balanceInEth < totalEthNeeded) {
+      if (balanceInEth < minimumEthRequired) {
         setBalanceError(
-          `Insufficient funds. You need ${totalEthNeeded.toFixed(6)} ETH ($${totalUsdNeeded.toFixed(2)}) including gas fees. You have ${balanceInEth.toFixed(6)} ETH.`
+          `Insufficient funds. You need ${minimumEthRequired.toFixed(6)} ETH ($${MINIMUM_USD_REQUIRED.toFixed(6)}). You have ${balanceInEth.toFixed(6)} ETH.`
         );
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Balance check error:', error);
+      console.error('[v0] Balance check error:', error);
       setBalanceError('Failed to check balance');
       return false;
     } finally {
@@ -160,43 +129,42 @@ export default function DuetGame() {
     }
   };
 
-  const sendGameTransaction = async (): Promise<string | null> => {
+  const sendGameTransaction = async (): Promise<boolean> => {
     if (!address) {
       console.error('[v0] No address available for transaction');
-      return null;
+      return false;
     }
 
     try {
-      console.log('[v0] Starting transaction with builder code: bc_928el9vb');
-      console.log('[v0] Address:', address);
-      console.log('[v0] Current chain:', chain?.id, 'Base chain ID:', base.id);
-      
       if (chain?.id !== base.id) {
-        console.log('[v0] Switching to Base chain...');
-        await switchChain?.({ chainId: base.id });
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        try {
+          await switchChain?.({ chainId: base.id });
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        } catch (e) {
+          console.warn('[v0] Chain switch failed, continuing:', e);
+        }
       }
 
       const amountInEth = MINIMUM_USD_REQUIRED / ethPrice;
       const amountInWei = parseEther(amountInEth.toFixed(18));
-      
-      // Verify we have enough balance
+
       const currentBalance = balanceData ? parseFloat(formatEther(balanceData.value)) : 0;
-      const totalNeeded = amountInEth;
-      
-      if (currentBalance < totalNeeded) {
-        setBalanceError(`Insufficient balance for transaction. Need ${totalNeeded.toFixed(6)} ETH, have ${currentBalance.toFixed(6)} ETH`);
-        return null;
+      if (currentBalance < amountInEth) {
+        setBalanceError(
+          `Insufficient balance. Need ${amountInEth.toFixed(6)} ETH, have ${currentBalance.toFixed(6)} ETH`
+        );
+        return false;
       }
 
-      console.log('[v0] Sending transaction with:');
-      console.log('[v0] - Amount:', amountInWei.toString(), 'wei');
-      console.log('[v0] - To:', GAME_FEE_RECIPIENT);
-      console.log('[v0] - Builder Code:', BUILDER_CODE);
-      console.log('[v0] - DATA_SUFFIX:', DATA_SUFFIX);
+      console.log('[v0] Sending transaction:', {
+        to: GAME_FEE_RECIPIENT,
+        value: amountInWei.toString(),
+        builderCode: BUILDER_CODE,
+      });
 
-      // sendCallsAsync returns a promise that resolves to the calls ID string
-      const result = await sendCallsAsync({
+      // The call resolves once the wallet has submitted the transaction.
+      // If the user rejects, it throws. If it resolves, we treat it as success.
+      await sendCallsAsync({
         calls: [
           {
             to: GAME_FEE_RECIPIENT as `0x${string}`,
@@ -206,67 +174,39 @@ export default function DuetGame() {
         capabilities: {
           dataSuffix: {
             value: DATA_SUFFIX,
-            optional: false,
+            optional: true,
           },
         },
       });
 
-      // Extract the ID - result could be a string directly or an object with id property
-      const callsId = typeof result === 'string' ? result : (result as { id?: string })?.id || String(result);
-
-      console.log('[v0] Transaction sent successfully with ID:', callsId);
-      console.log('[v0] Result type:', typeof result, 'Value:', JSON.stringify(result));
-      console.log('[v0] Extracted callsId:', callsId);
-      
-      // If we got a valid callsId, return it for status tracking
-      if (callsId && callsId !== 'undefined' && callsId !== 'null') {
-        return callsId;
-      }
-      
-      // If sendCalls succeeded but we couldn't get an ID, start the game immediately
-      // This handles cases where the wallet completes the transaction synchronously
-      console.log('[v0] No trackable callsId returned, starting game directly after successful sendCalls');
-      return '__DIRECT_SUCCESS__';
+      console.log('[v0] Transaction submitted successfully');
+      return true;
     } catch (error: unknown) {
       console.error('[v0] Transaction error:', error);
-      console.error('[v0] Error type:', typeof error);
-      console.error('[v0] Error keys:', error && typeof error === 'object' ? Object.keys(error) : 'N/A');
 
       if (error && typeof error === 'object' && 'message' in error) {
         const errorMessage = (error as { message: string }).message;
-        console.error('[v0] Error message:', errorMessage);
-        if (errorMessage.includes('insufficient')) {
-          setBalanceError('Insufficient funds including gas fees. Try adding more ETH to your wallet.');
-        } else if (errorMessage.includes('rejected') || errorMessage.includes('denied') || errorMessage.includes('User rejected')) {
-          setBalanceError('Transaction cancelled. Please sign the transaction to play.');
+        if (errorMessage.toLowerCase().includes('insufficient')) {
+          setBalanceError('Insufficient funds including gas fees.');
+        } else if (
+          errorMessage.toLowerCase().includes('rejected') ||
+          errorMessage.toLowerCase().includes('denied') ||
+          errorMessage.toLowerCase().includes('user rejected') ||
+          errorMessage.toLowerCase().includes('cancel')
+        ) {
+          setBalanceError('Transaction cancelled. Please sign to play.');
         } else {
-          setBalanceError(`Transaction failed: ${errorMessage}`);
+          setBalanceError(`Transaction failed. Please try again.`);
         }
       } else {
         setBalanceError('Transaction failed. Please try again.');
       }
 
-      return null;
+      return false;
     }
   };
 
-  const startGameAfterConfirmation = useCallback((): void => {
-    console.log('[v0] startGameAfterConfirmation() called');
-    console.log('[v0] Current gameStatus before change:', gameStatus);
-
-    // Clear any pending timeout
-    const existingTimeout = (window as { __gameTransactionTimeout?: ReturnType<typeof setTimeout> }).__gameTransactionTimeout;
-    if (existingTimeout) {
-      clearTimeout(existingTimeout);
-      (window as { __gameTransactionTimeout?: ReturnType<typeof setTimeout> }).__gameTransactionTimeout = undefined;
-    }
-
-    // Critical: Reset all transaction state FIRST
-    setPendingCallsId(null);
-    setIsConfirmingTransaction(false);
-    setBalanceError('');
-
-    // Update game state with fresh start
+  const startGameLoop = useCallback((): void => {
     const now = Date.now();
     gameStateRef.current = {
       ...gameStateRef.current,
@@ -291,86 +231,12 @@ export default function DuetGame() {
       difficultyWave: 0,
     };
 
-    console.log('[v0] Updated gameStateRef:', {
-      isPlaying: gameStateRef.current.isPlaying,
-      startTime: gameStateRef.current.startTime,
-      now: now
-    });
-
-    // Enable audio
+    setBalanceError('');
     setAudioEnabled(true);
-    
-    // Force immediate re-render and update game status together
-    console.log('[v0] Setting gameStatus to playing');
     setGameStatus('playing');
     forceUpdate((n) => n + 1);
-    
-    console.log('[v0] Game initialization complete - game should start now');
+    console.log('[v0] Game started');
   }, []);
-
-  useEffect(() => {
-    if (!pendingCallsId) {
-      console.log('[v0] No pending calls ID, skipping status check');
-      return;
-    }
-
-    console.log('[v0] Checking calls status for:', pendingCallsId);
-    console.log('[v0] Current callsStatus:', JSON.stringify(callsStatus, null, 2));
-    console.log('[v0] callsStatus?.status:', callsStatus?.status);
-    console.log('[v0] callsStatus?.receipts:', callsStatus?.receipts);
-    console.log('[v0] isCheckingStatus:', isCheckingStatus);
-
-    if (!callsStatus) {
-      console.log('[v0] callsStatus not yet available, waiting...');
-      return;
-    }
-
-    const status = callsStatus?.status ? callsStatus.status.toUpperCase() : '';
-    console.log('[v0] Normalized status:', status);
-
-    // Check for successful transaction completion
-    const hasReceipts = callsStatus?.receipts && Array.isArray(callsStatus.receipts) && callsStatus.receipts.length > 0;
-    const hasAnyValidReceipt = hasReceipts && callsStatus.receipts.some((r: unknown) => r !== null && r !== undefined);
-    
-    // Success conditions: CONFIRMED, SUCCESS status, or has valid receipts
-    const isConfirmed = 
-      status === 'CONFIRMED' || 
-      status === 'SUCCESS' ||
-      status === 'COMPLETED' ||
-      hasAnyValidReceipt;
-
-    console.log('[v0] Debug check:');
-    console.log('[v0] - status:', status);
-    console.log('[v0] - hasReceipts:', hasReceipts);
-    console.log('[v0] - hasAnyValidReceipt:', hasAnyValidReceipt);
-    console.log('[v0] - isConfirmed:', isConfirmed);
-
-    if (isConfirmed) {
-      console.log('[v0] ✅ Transaction CONFIRMED! Starting game now...');
-      startGameAfterConfirmation();
-    } else if (status === 'FAILED' || status?.includes('FAILED') || status?.includes('ERROR') || status?.includes('REJECTED')) {
-      console.log('[v0] ❌ Transaction FAILED with status:', status);
-      setBalanceError('Transaction failed. Please try again.');
-      setPendingCallsId(null);
-      setIsConfirmingTransaction(false);
-      gameStateRef.current.isTransactionPending = false;
-      forceUpdate((n) => n + 1);
-    } else {
-      console.log('[v0] ⏳ Transaction pending with status:', status);
-    }
-  }, [callsStatus, pendingCallsId, startGameAfterConfirmation]);
-
-  // Watch for sendCallsData updates - this can indicate transaction completion
-  useEffect(() => {
-    if (sendCallsData && isConfirmingTransaction && !pendingCallsId) {
-      console.log('[v0] sendCallsData received while confirming:', sendCallsData);
-      // If we have data but no pendingCallsId, set it now
-      const id = typeof sendCallsData === 'string' ? sendCallsData : String(sendCallsData);
-      if (id && id !== 'undefined' && id !== 'null') {
-        setPendingCallsId(id);
-      }
-    }
-  }, [sendCallsData, isConfirmingTransaction, pendingCallsId]);
 
   const startGame = async (): Promise<void> => {
     if (!isConnected) {
@@ -382,39 +248,22 @@ export default function DuetGame() {
     if (!hasBalance) return;
 
     gameStateRef.current.isTransactionPending = true;
-    setBalanceError('Signing transaction in your wallet...');
-    setIsConfirmingTransaction(false);
+    setIsSigningTx(true);
+    setBalanceError('Sign the transaction in your wallet to play...');
     forceUpdate((n) => n + 1);
 
-    const callsId = await sendGameTransaction();
+    const success = await sendGameTransaction();
 
-    if (!callsId) {
-      gameStateRef.current.isTransactionPending = false;
-      setIsConfirmingTransaction(false);
+    gameStateRef.current.isTransactionPending = false;
+    setIsSigningTx(false);
+
+    if (!success) {
       forceUpdate((n) => n + 1);
       return;
     }
 
-    // Handle direct success case where sendCalls completed synchronously
-    if (callsId === '__DIRECT_SUCCESS__') {
-      console.log('[v0] Direct success - starting game immediately');
-      startGameAfterConfirmation();
-      return;
-    }
-
-    setBalanceError('Confirming transaction on-chain...');
-    setIsConfirmingTransaction(true);
-    setPendingCallsId(callsId);
-    
-    // Set a timeout fallback - if status polling doesn't confirm within 15 seconds,
-    // assume the transaction was successful (since sendCalls succeeded without error)
-    const timeoutId = setTimeout(() => {
-      console.log('[v0] Transaction confirmation timeout - assuming success and starting game');
-      startGameAfterConfirmation();
-    }, 15000);
-    
-    // Store timeout ID so we can clear it if status is confirmed before timeout
-    (window as { __gameTransactionTimeout?: ReturnType<typeof setTimeout> }).__gameTransactionTimeout = timeoutId;
+    // Transaction accepted by wallet — start the game immediately
+    startGameLoop();
   };
 
   const endGame = useCallback((): void => {
@@ -424,7 +273,9 @@ export default function DuetGame() {
       gameStateRef.current.highScore = gameStateRef.current.score;
 
       if (typeof window !== 'undefined') {
-        localStorage.setItem('duet-highscore', gameStateRef.current.highScore.toString());
+        try {
+          localStorage.setItem('duet-highscore', gameStateRef.current.highScore.toString());
+        } catch {}
       }
     }
 
@@ -441,157 +292,146 @@ export default function DuetGame() {
     setTimeout(() => setPulseIntensity(0), 200);
   }, []);
 
-  const gameLoop = useCallback((timestamp: number): void => {
-    if (!gameStateRef.current.isPlaying) return;
+  const gameLoop = useCallback(
+    (timestamp: number): void => {
+      if (!gameStateRef.current.isPlaying) return;
 
-    const deltaTime = lastFrameTimeRef.current ? (timestamp - lastFrameTimeRef.current) / (1000 / 60) : 1;
-    lastFrameTimeRef.current = timestamp;
+      const deltaTime = lastFrameTimeRef.current ? (timestamp - lastFrameTimeRef.current) / (1000 / 60) : 1;
+      lastFrameTimeRef.current = timestamp;
 
-    const currentTime = Date.now();
-    const elapsed = currentTime - gameStateRef.current.startTime;
-    setElapsedTime(elapsed);
+      const currentTime = Date.now();
+      const elapsed = currentTime - gameStateRef.current.startTime;
+      setElapsedTime(elapsed);
 
-    const newDifficulty = calculateDifficulty(elapsed);
-    gameStateRef.current.difficulty = newDifficulty;
-    gameStateRef.current.difficultyWave = Math.floor(newDifficulty / 5);
+      const newDifficulty = calculateDifficulty(elapsed);
+      gameStateRef.current.difficulty = newDifficulty;
+      gameStateRef.current.difficultyWave = Math.floor(newDifficulty / 5);
 
-    const rotationSpeed = GAME_CONFIG.ROTATION_SPEED * deltaTime;
+      const rotationSpeed = GAME_CONFIG.ROTATION_SPEED * deltaTime;
+      const effectiveDeltaTime =
+        currentTime < gameStateRef.current.slowMoEndTime ? deltaTime * 0.5 : deltaTime;
+      const slowFactor = currentTime < gameStateRef.current.slowMoEndTime ? 0.5 : 1;
 
-    // Apply slow-mo effect if active
-    const effectiveDeltaTime = currentTime < gameStateRef.current.slowMoEndTime ? deltaTime * 0.5 : deltaTime;
+      if (leftControlActive.current) {
+        gameStateRef.current.circles[0].angle -= rotationSpeed * slowFactor;
+        gameStateRef.current.circles[1].angle -= rotationSpeed * slowFactor;
+        gameStateRef.current.circles[0].direction = 'ccw';
+        gameStateRef.current.circles[1].direction = 'ccw';
+      }
 
-    if (leftControlActive.current) {
-      gameStateRef.current.circles[0].angle -= rotationSpeed * (currentTime < gameStateRef.current.slowMoEndTime ? 0.5 : 1);
-      gameStateRef.current.circles[1].angle -= rotationSpeed * (currentTime < gameStateRef.current.slowMoEndTime ? 0.5 : 1);
-      gameStateRef.current.circles[0].direction = 'ccw';
-      gameStateRef.current.circles[1].direction = 'ccw';
-    }
+      if (rightControlActive.current) {
+        gameStateRef.current.circles[0].angle += rotationSpeed * slowFactor;
+        gameStateRef.current.circles[1].angle += rotationSpeed * slowFactor;
+        gameStateRef.current.circles[0].direction = 'cw';
+        gameStateRef.current.circles[1].direction = 'cw';
+      }
 
-    if (rightControlActive.current) {
-      gameStateRef.current.circles[0].angle += rotationSpeed * (currentTime < gameStateRef.current.slowMoEndTime ? 0.5 : 1);
-      gameStateRef.current.circles[1].angle += rotationSpeed * (currentTime < gameStateRef.current.slowMoEndTime ? 0.5 : 1);
-      gameStateRef.current.circles[0].direction = 'cw';
-      gameStateRef.current.circles[1].direction = 'cw';
-    }
+      const newPowerUp = spawnPowerUp(newDifficulty, GAME_CONFIG.CENTER_X, GAME_CONFIG.CENTER_Y);
+      if (newPowerUp) {
+        gameStateRef.current.powerUps.push(newPowerUp);
+      }
 
-    // Spawn power-ups
-    const newPowerUp = spawnPowerUp(newDifficulty, GAME_CONFIG.CENTER_X, GAME_CONFIG.CENTER_Y);
-    if (newPowerUp) {
-      gameStateRef.current.powerUps.push(newPowerUp);
-    }
-
-    // Check power-up collisions
-    const collectedPowerUp = checkPowerUpCollision(
-      gameStateRef.current.circles,
-      gameStateRef.current.powerUps,
-      GAME_CONFIG.CENTER_X,
-      GAME_CONFIG.CENTER_Y,
-      GAME_CONFIG.ORBIT_RADIUS
-    );
-
-    if (collectedPowerUp) {
-      // Create particles at collection
-      gameStateRef.current.particles.push(
-        ...createParticles(
-          GAME_CONFIG.CENTER_X,
-          GAME_CONFIG.CENTER_Y,
-          collectedPowerUp.type === 'shield' ? '#FFD700' : collectedPowerUp.type === 'slowmo' ? '#00D9FF' : '#FF00FF',
-          12
-        )
+      const collectedPowerUp = checkPowerUpCollision(
+        gameStateRef.current.circles,
+        gameStateRef.current.powerUps,
+        GAME_CONFIG.CENTER_X,
+        GAME_CONFIG.CENTER_Y,
+        GAME_CONFIG.ORBIT_RADIUS
       );
 
-      if (collectedPowerUp.type === 'shield') {
-        gameStateRef.current.activeShield = true;
-        setTimeout(() => {
-          gameStateRef.current.activeShield = false;
-        }, 5000);
-      } else if (collectedPowerUp.type === 'slowmo') {
-        gameStateRef.current.slowMoEndTime = currentTime + 3000;
-      } else if (collectedPowerUp.type === 'doubleSpin') {
-        gameStateRef.current.comboCount = Math.min(gameStateRef.current.comboCount + 10, 100);
-      }
-
-      gameStateRef.current.powerUps = gameStateRef.current.powerUps.filter((pu) => pu.id !== collectedPowerUp.id);
-      gameStateRef.current.score += Math.floor(50 * calculateComboMultiplier(gameStateRef.current.comboCount));
-    }
-
-    // Update power-ups
-    gameStateRef.current.powerUps = updatePowerUps(gameStateRef.current.powerUps);
-
-    // Update particles
-    gameStateRef.current.particles = updateParticles(gameStateRef.current.particles);
-
-    if (
-      currentTime - gameStateRef.current.lastObstacleSpawn >
-      GAME_CONFIG.OBSTACLE_SPAWN_INTERVAL - newDifficulty * 100
-    ) {
-      gameStateRef.current.obstacles.push(spawnObstacle(newDifficulty));
-      gameStateRef.current.lastObstacleSpawn = currentTime;
-    }
-
-    gameStateRef.current.obstacles = gameStateRef.current.obstacles.map(obstacle => ({
-      ...obstacle,
-      y: obstacle.y + (GAME_CONFIG.BASE_OBSTACLE_SPEED + newDifficulty * GAME_CONFIG.DIFFICULTY_SPEED_MULTIPLIER) * effectiveDeltaTime,
-    }));
-
-    gameStateRef.current.obstacles = gameStateRef.current.obstacles.filter(
-      (obstacle) => obstacle.y < GAME_CONFIG.CANVAS_HEIGHT
-    );
-
-    gameStateRef.current.score = Math.floor(elapsed / 100);
-
-    // Update combo
-    if (currentTime - gameStateRef.current.lastSuccessTime > 1000) {
-      gameStateRef.current.comboCount = Math.max(0, gameStateRef.current.comboCount - 1);
-      gameStateRef.current.lastSuccessTime = currentTime;
-    }
-
-    if (checkCollision(gameStateRef.current.circles, gameStateRef.current.obstacles)) {
-      if (!gameStateRef.current.activeShield) {
-        endGame();
-        return;
-      } else {
-        // Shield absorbs hit, remove one obstacle
-        gameStateRef.current.obstacles = gameStateRef.current.obstacles.slice(1);
-        gameStateRef.current.activeShield = false;
+      if (collectedPowerUp) {
         gameStateRef.current.particles.push(
-          ...createParticles(GAME_CONFIG.CENTER_X, GAME_CONFIG.CENTER_Y, '#FFD700', 20)
+          ...createParticles(
+            GAME_CONFIG.CENTER_X,
+            GAME_CONFIG.CENTER_Y,
+            collectedPowerUp.type === 'shield'
+              ? '#FFD700'
+              : collectedPowerUp.type === 'slowmo'
+              ? '#00D9FF'
+              : '#FF00FF',
+            12
+          )
         );
-      }
-    }
 
-    if (gameStateRef.current.isPlaying) {
-      animationFrameRef.current = requestAnimationFrame(gameLoop);
-    }
-  }, [endGame]);
+        if (collectedPowerUp.type === 'shield') {
+          gameStateRef.current.activeShield = true;
+          setTimeout(() => {
+            gameStateRef.current.activeShield = false;
+          }, 5000);
+        } else if (collectedPowerUp.type === 'slowmo') {
+          gameStateRef.current.slowMoEndTime = currentTime + 3000;
+        } else if (collectedPowerUp.type === 'doubleSpin') {
+          gameStateRef.current.comboCount = Math.min(gameStateRef.current.comboCount + 10, 100);
+        }
+
+        gameStateRef.current.powerUps = gameStateRef.current.powerUps.filter((pu) => pu.id !== collectedPowerUp.id);
+        gameStateRef.current.score += Math.floor(50 * calculateComboMultiplier(gameStateRef.current.comboCount));
+      }
+
+      gameStateRef.current.powerUps = updatePowerUps(gameStateRef.current.powerUps);
+      gameStateRef.current.particles = updateParticles(gameStateRef.current.particles);
+
+      if (
+        currentTime - gameStateRef.current.lastObstacleSpawn >
+        GAME_CONFIG.OBSTACLE_SPAWN_INTERVAL - newDifficulty * 100
+      ) {
+        gameStateRef.current.obstacles.push(spawnObstacle(newDifficulty));
+        gameStateRef.current.lastObstacleSpawn = currentTime;
+      }
+
+      gameStateRef.current.obstacles = gameStateRef.current.obstacles.map((obstacle) => ({
+        ...obstacle,
+        y:
+          obstacle.y +
+          (GAME_CONFIG.BASE_OBSTACLE_SPEED + newDifficulty * GAME_CONFIG.DIFFICULTY_SPEED_MULTIPLIER) *
+            effectiveDeltaTime,
+      }));
+
+      gameStateRef.current.obstacles = gameStateRef.current.obstacles.filter(
+        (obstacle) => obstacle.y < GAME_CONFIG.CANVAS_HEIGHT
+      );
+
+      gameStateRef.current.score = Math.floor(elapsed / 100);
+
+      if (currentTime - gameStateRef.current.lastSuccessTime > 1000) {
+        gameStateRef.current.comboCount = Math.max(0, gameStateRef.current.comboCount - 1);
+        gameStateRef.current.lastSuccessTime = currentTime;
+      }
+
+      if (checkCollision(gameStateRef.current.circles, gameStateRef.current.obstacles)) {
+        if (!gameStateRef.current.activeShield) {
+          endGame();
+          return;
+        } else {
+          gameStateRef.current.obstacles = gameStateRef.current.obstacles.slice(1);
+          gameStateRef.current.activeShield = false;
+          gameStateRef.current.particles.push(
+            ...createParticles(GAME_CONFIG.CENTER_X, GAME_CONFIG.CENTER_Y, '#FFD700', 20)
+          );
+        }
+      }
+
+      if (gameStateRef.current.isPlaying) {
+        animationFrameRef.current = requestAnimationFrame(gameLoop);
+      }
+    },
+    [endGame]
+  );
 
   useEffect(() => {
-    console.log('[v0] gameStatus changed to:', gameStatus);
-    console.log('[v0] gameStateRef.current.isPlaying:', gameStateRef.current.isPlaying);
-    console.log('[v0] Rendering game with status:', gameStatus);
-
     if (gameStatus === 'playing' && gameStateRef.current.isPlaying) {
-      console.log('[v0] ✅ Conditions met for game loop - gameStatus=playing AND isPlaying=true');
       lastFrameTimeRef.current = 0;
-      
-      // Start the game loop immediately with requestAnimationFrame
-      const startLoop = () => {
-        console.log('[v0] Game loop requestAnimationFrame started');
+      const timeoutId = setTimeout(() => {
         animationFrameRef.current = requestAnimationFrame(gameLoop);
-      };
-      
-      // Use setTimeout to ensure React has finished rendering
-      const timeoutId = setTimeout(startLoop, 0);
+      }, 0);
 
       return () => {
         clearTimeout(timeoutId);
-        console.log('[v0] Cleaning up game loop effect');
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
         }
       };
     } else {
-      console.log('[v0] Game loop conditions not met - cancelling animation frame');
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -620,48 +460,18 @@ export default function DuetGame() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedHighScore = localStorage.getItem('duet-highscore');
-      if (savedHighScore) {
-        gameStateRef.current.highScore = parseInt(savedHighScore, 10);
-      }
+      try {
+        const savedHighScore = localStorage.getItem('duet-highscore');
+        if (savedHighScore) {
+          gameStateRef.current.highScore = parseInt(savedHighScore, 10);
+        }
+      } catch {}
     }
-  }, []);
-
-  useEffect(() => {
-    const audio = new Audio('https://ia601905.us.archive.org/27/items/tvtunes_17714/28%20Days%20Later.mp3');
-    audio.loop = true;
-    audio.volume = 0.5;
-    audioRef.current = audio;
-
-    let audioStarted = false;
-
-    const startAudioOnInteraction = () => {
-      if (audioRef.current && audioRef.current.paused && !audioStarted) {
-        audioRef.current.play()
-          .then(() => { audioStarted = true; })
-          .catch(() => {});
-      }
-    };
-
-    audio.play().catch(() => {});
-
-    const events = ['click', 'touchstart', 'touchend', 'keydown', 'pointerdown'];
-    events.forEach(event => document.addEventListener(event, startAudioOnInteraction, { capture: true }));
-
-    return () => {
-      audio.pause();
-      audio.src = '';
-      audioRef.current = null;
-      events.forEach(event => document.removeEventListener(event, startAudioOnInteraction, { capture: true }));
-    };
   }, []);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black relative overflow-hidden">
-      <AudioManager
-        isPlaying={gameStatus === 'playing' && audioEnabled}
-        onBeat={handleBeat}
-      />
+      <AudioManager isPlaying={gameStatus === 'playing' && audioEnabled} onBeat={handleBeat} />
 
       {isConnected && gameStatus !== 'playing' && (
         <button
@@ -673,12 +483,16 @@ export default function DuetGame() {
         </button>
       )}
 
+      {gameStatus !== 'playing' && (
+        <div className="fixed top-6 left-6 z-50">
+          <FullscreenButton />
+        </div>
+      )}
+
       {gameStatus === 'menu' && (
-        <div className="flex flex-col items-center justify-center gap-12 z-10 px-4 min-h-screen">
+        <div className="flex flex-col items-center justify-center gap-10 z-10 px-4 min-h-screen py-12">
           <div className="text-center animate-fade-in">
-            <h1 className="text-8xl md:text-9xl font-light text-white tracking-tight mb-4">
-              DUET
-            </h1>
+            <h1 className="text-7xl md:text-9xl font-light text-white tracking-tight mb-4">DUET</h1>
             <div className="h-px bg-white opacity-40 w-32 mx-auto mb-6" />
             <p className="text-xs md:text-sm font-medium text-gray-400 uppercase tracking-widest">
               On-Chain Survival Game
@@ -687,9 +501,7 @@ export default function DuetGame() {
             {gameStateRef.current.highScore > 0 && (
               <div className="mt-8 text-center border-t border-gray-800 pt-8">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-2">Personal Best</p>
-                <p className="text-5xl md:text-6xl font-light text-white">
-                  {gameStateRef.current.highScore}
-                </p>
+                <p className="text-5xl md:text-6xl font-light text-white">{gameStateRef.current.highScore}</p>
               </div>
             )}
           </div>
@@ -700,7 +512,7 @@ export default function DuetGame() {
             </div>
           )}
 
-          <div className="flex flex-col gap-8 items-center mt-8">
+          <div className="flex flex-col gap-6 items-center">
             {!isConnected ? (
               <div className="flex flex-col items-center gap-4">
                 <WalletConnectButton />
@@ -711,31 +523,25 @@ export default function DuetGame() {
             ) : (
               <StyledButton
                 onClick={startGame}
-                disabled={isCheckingBalance || gameStateRef.current.isTransactionPending || isConfirmingTransaction}
+                disabled={isCheckingBalance || isSigningTx}
                 variant="primary"
                 size="xl"
               >
-                {isConfirmingTransaction
-                  ? 'Confirming on-chain...'
-                  : gameStateRef.current.isTransactionPending
-                  ? 'Sign in wallet...'
-                  : isCheckingBalance
-                  ? 'Checking balance...'
-                  : 'Start Game'}
+                {isSigningTx ? 'Sign in wallet...' : isCheckingBalance ? 'Checking balance...' : 'Start Game'}
               </StyledButton>
             )}
 
-            <div className="max-w-md border border-gray-800 pt-8 mt-4">
-              <div className="text-gray-400 text-xs text-center space-y-4">
+            <div className="max-w-md border border-gray-800 pt-6 mt-2 px-4">
+              <div className="text-gray-400 text-xs text-center space-y-3">
                 <div>
                   <p className="font-medium text-white mb-1 uppercase tracking-widest">Controls</p>
-                  <p className="text-xs font-light">Hold left/right side of screen to rotate</p>
+                  <p className="text-xs font-light">Tap left / right buttons at the bottom to rotate</p>
                 </div>
                 <div>
                   <p className="font-medium text-white mb-1 uppercase tracking-widest">Objective</p>
                   <p className="text-xs font-light">Avoid the white obstacles to advance</p>
                 </div>
-                <p className="text-xs text-gray-500 font-light pt-2">(Desktop: Arrow Keys or A/D)</p>
+                <p className="text-xs text-gray-500 font-light pt-2">Desktop: Arrow Keys or A / D</p>
               </div>
             </div>
           </div>
@@ -745,13 +551,8 @@ export default function DuetGame() {
       {gameStatus === 'playing' && (
         <>
           <div className="fixed inset-0 w-full h-full overflow-hidden bg-black">
-            <GameCanvas
-              gameState={gameStateRef.current}
-              pulseIntensity={pulseIntensity}
-            />
+            <GameCanvas gameState={gameStateRef.current} pulseIntensity={pulseIntensity} />
           </div>
-
-          <ControlsGuide />
 
           <HUD
             score={gameStateRef.current.score}
@@ -763,65 +564,59 @@ export default function DuetGame() {
             slowMoActive={Date.now() < gameStateRef.current.slowMoEndTime}
           />
 
-          <button
-            onClick={() => setAudioEnabled(!audioEnabled)}
-            className="fixed bottom-6 left-6 z-40 bg-black border border-white px-4 py-3 text-white text-sm font-medium uppercase tracking-widest hover:bg-white hover:text-black transition-smooth"
-            title={audioEnabled ? 'Mute Audio' : 'Unmute Audio'}
-          >
-            {audioEnabled ? 'Sound On' : 'Sound Off'}
-          </button>
+          <div className="fixed top-4 left-4 z-40 flex gap-2">
+            <FullscreenButton />
+            <button
+              onClick={() => setAudioEnabled(!audioEnabled)}
+              className="bg-black/70 backdrop-blur border border-white/60 px-3 py-2 text-white text-xs font-medium uppercase tracking-widest hover:bg-white hover:text-black transition-smooth"
+              title={audioEnabled ? 'Mute Audio' : 'Unmute Audio'}
+            >
+              {audioEnabled ? 'Sound On' : 'Sound Off'}
+            </button>
+          </div>
 
           <MobileControls
-            onLeftControl={(active) => { leftControlActive.current = active; }}
-            onRightControl={(active) => { rightControlActive.current = active; }}
+            onLeftControl={(active) => {
+              leftControlActive.current = active;
+            }}
+            onRightControl={(active) => {
+              rightControlActive.current = active;
+            }}
           />
         </>
       )}
 
       {gameStatus === 'gameOver' && (
-        <div className="flex flex-col items-center justify-center gap-12 z-10 px-4">
+        <div className="flex flex-col items-center justify-center gap-10 z-10 px-4 py-12">
           <div className="text-center animate-fade-in">
-            <h2 className="text-5xl md:text-7xl font-light text-white tracking-wider mb-2">
-              GAME OVER
-            </h2>
+            <h2 className="text-5xl md:text-7xl font-light text-white tracking-wider mb-2">GAME OVER</h2>
             <div className="h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-30 my-8" />
 
-            <div className="mt-12">
+            <div className="mt-8">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-3">Score</p>
-              <p className="text-6xl md:text-7xl font-light text-white tabular-nums">
-                {gameStateRef.current.score}
-              </p>
+              <p className="text-6xl md:text-7xl font-light text-white tabular-nums">{gameStateRef.current.score}</p>
             </div>
 
             {gameStateRef.current.highScore > gameStateRef.current.score && (
-              <div className="mt-8 text-gray-400">
+              <div className="mt-6 text-gray-400">
                 <p className="text-xs font-medium uppercase tracking-widest mb-2">Best Score</p>
-                <p className="text-2xl font-light text-gray-300">
-                  {gameStateRef.current.highScore}
-                </p>
+                <p className="text-2xl font-light text-gray-300">{gameStateRef.current.highScore}</p>
               </div>
             )}
           </div>
 
+          {balanceError && (
+            <div className="bg-red-900/30 backdrop-blur-md border border-red-700 px-6 py-4 max-w-md shadow-sm animate-fade-in">
+              <p className="text-red-300 text-sm font-medium text-center">{balanceError}</p>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-4">
-            <StyledButton
-              onClick={startGame}
-              disabled={isCheckingBalance || gameStateRef.current.isTransactionPending || isConfirmingTransaction}
-              variant="primary"
-              size="lg"
-            >
-              {isConfirmingTransaction
-                ? 'Confirming...'
-                : gameStateRef.current.isTransactionPending
-                ? 'Signing...'
-                : 'Play Again'}
+            <StyledButton onClick={startGame} disabled={isCheckingBalance || isSigningTx} variant="primary" size="lg">
+              {isSigningTx ? 'Signing...' : isCheckingBalance ? 'Checking...' : 'Play Again'}
             </StyledButton>
 
-            <StyledButton
-              onClick={resetGame}
-              variant="outline"
-              size="lg"
-            >
+            <StyledButton onClick={resetGame} variant="outline" size="lg">
               Menu
             </StyledButton>
           </div>
