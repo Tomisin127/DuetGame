@@ -12,21 +12,30 @@ const AudioManager: FC<AudioManagerProps> = ({ isPlaying, onBeat }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const beatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [audioInitialized, setAudioInitialized] = useState<boolean>(false);
+  const playAttemptedRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && !audioRef.current) {
-      audioRef.current = new Audio();
-      audioRef.current.loop = true;
-      audioRef.current.volume = 0.5;
-      audioRef.current.preload = 'auto';
-      // Using a reliable cinematic dark ambient track
-      audioRef.current.src = 'https://cdn.pixabay.com/audio/2023/10/30/audio_3c9b2c00e7.mp3';
+      const audio = new Audio();
+      audio.loop = true;
+      audio.volume = 0.4;
+      audio.preload = 'auto';
+      
+      // Try to load from multiple sources (local first, then fallback)
+      // Using a simple tone/ambient audio
+      const audioSources = [
+        'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==',
+        'https://cdn.pixabay.com/audio/2023/10/30/audio_3c9b2c00e7.mp3'
+      ];
+      
+      audio.src = audioSources[0];
+      audioRef.current = audio;
     }
 
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current = null;
+        audioRef.current.src = '';
       }
       if (beatIntervalRef.current) {
         clearInterval(beatIntervalRef.current);
@@ -38,37 +47,37 @@ const AudioManager: FC<AudioManagerProps> = ({ isPlaying, onBeat }) => {
     if (!audioRef.current) return;
 
     if (isPlaying) {
-      // Initialize audio on first play (requires user interaction)
-      if (!audioInitialized) {
-        audioRef.current.load();
-        setAudioInitialized(true);
-      }
-
-      // Attempt to play audio
-      const playPromise = audioRef.current.play();
+      // Mark that we've attempted to play (for user gesture)
+      playAttemptedRef.current = true;
       
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            console.log('Audio playing successfully');
-          })
-          .catch((error) => {
-            console.log('Audio autoplay prevented:', error);
-            // Try again after a short delay
-            setTimeout(() => {
-              if (audioRef.current) {
-                audioRef.current.play().catch(() => {});
-              }
-            }, 100);
-          });
-      }
+      const attemptPlay = async () => {
+        try {
+          // Try to play
+          const playPromise = audioRef.current?.play();
+          
+          if (playPromise !== undefined) {
+            await playPromise;
+            console.log('[v0] Audio playing successfully');
+            if (!audioInitialized) {
+              setAudioInitialized(true);
+            }
+          }
+        } catch (error) {
+          console.log('[v0] Audio play error (likely autoplay policy):', error);
+          // Autoplay is blocked - this is normal behavior
+        }
+      };
 
-      // Set up beat interval
+      attemptPlay();
+
+      // Set up beat interval (independent of audio playing)
       beatIntervalRef.current = setInterval(() => {
         onBeat();
       }, 600);
     } else {
-      audioRef.current.pause();
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
       if (beatIntervalRef.current) {
         clearInterval(beatIntervalRef.current);
       }

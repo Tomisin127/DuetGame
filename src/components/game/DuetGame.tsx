@@ -46,7 +46,7 @@ export default function DuetGame() {
   const [balanceError, setBalanceError] = useState<string>('');
 
   const [ethPrice, setEthPrice] = useState<number>(2500);
-  const [audioEnabled, setAudioEnabled] = useState<boolean>(false);
+  const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
 
   const gameStateRef = useRef<GameState>({
     isPlaying: false,
@@ -232,7 +232,6 @@ export default function DuetGame() {
     };
 
     setBalanceError('');
-    setAudioEnabled(true);
     setGameStatus('playing');
     forceUpdate((n) => n + 1);
     console.log('[v0] Game started');
