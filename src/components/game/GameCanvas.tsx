@@ -125,33 +125,6 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
         ctx.shadowBlur = 0;
       });
 
-      // Power-ups
-      state.powerUps.forEach((powerUp) => {
-        const puX = GAME_CONFIG.CENTER_X + Math.cos(powerUp.angle) * GAME_CONFIG.ORBIT_RADIUS * 1.5;
-        const puY = GAME_CONFIG.CENTER_Y + Math.sin(powerUp.angle) * GAME_CONFIG.ORBIT_RADIUS * 1.5;
-
-        const puColors: Record<string, string> = {
-          shield: '#FFD700',
-          slowmo: '#00D9FF',
-          doubleSpin: '#FF00FF',
-        };
-
-        const puColor = puColors[powerUp.type] || '#FFFF00';
-
-        ctx.shadowBlur = 25;
-        ctx.shadowColor = puColor;
-
-        ctx.beginPath();
-        ctx.arc(puX, puY, 12, 0, Math.PI * 2);
-        ctx.fillStyle = puColor;
-        ctx.fill();
-
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-      });
-
       // Particles
       state.particles.forEach((particle) => {
         ctx.globalAlpha = particle.life;

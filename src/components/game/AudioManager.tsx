@@ -21,14 +21,8 @@ const AudioManager: FC<AudioManagerProps> = ({ isPlaying, onBeat }) => {
       audio.volume = 0.4;
       audio.preload = 'auto';
       
-      // Try to load from multiple sources (local first, then fallback)
-      // Using a simple tone/ambient audio
-      const audioSources = [
-        'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==',
-        'https://cdn.pixabay.com/audio/2023/10/30/audio_3c9b2c00e7.mp3'
-      ];
-      
-      audio.src = audioSources[0];
+      // High-energy synthwave arcade track perfect for rhythm games
+      audio.src = 'https://cdn.pixabay.com/download/audio/2024/11/13/audio_18c90d4aea.mp3';
       audioRef.current = audio;
     }
 
