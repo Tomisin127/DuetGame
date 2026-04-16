@@ -16,8 +16,8 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
   const animationFrameRef = useRef<number>(0);
   const gameStateRef = useRef<GameState>(gameState);
   const pulseRef = useRef<number>(pulseIntensity);
+  const dprRef = useRef<number>(1);
 
-  // Update refs when props change
   useEffect(() => {
     gameStateRef.current = gameState;
     pulseRef.current = pulseIntensity;
@@ -25,27 +25,24 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const container = containerRef.current;
-    if (!canvas || !container) return;
+    if (!canvas) return;
 
     const resizeCanvas = (): void => {
       const dpr = window.devicePixelRatio || 1;
+      dprRef.current = dpr;
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
       canvas.style.width = `${window.innerWidth}px`;
       canvas.style.height = `${window.innerHeight}px`;
-      
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.scale(dpr, dpr);
-      }
     };
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('orientationchange', resizeCanvas);
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('orientationchange', resizeCanvas);
     };
   }, []);
 
@@ -59,28 +56,31 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
     const render = (): void => {
       const state = gameStateRef.current;
       const pulse = pulseRef.current;
-      
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      
-      const scaleX = width / GAME_CONFIG.CANVAS_WIDTH;
-      const scaleY = height / GAME_CONFIG.CANVAS_HEIGHT;
+
+      const dpr = dprRef.current;
+      const cssWidth = window.innerWidth;
+      const cssHeight = window.innerHeight;
+
+      // Reset transform and clear at full device-pixel resolution
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.fillStyle = COLORS.BACKGROUND;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Calculate aspect-preserving scale using CSS pixels, then multiply by DPR
+      const scaleX = cssWidth / GAME_CONFIG.CANVAS_WIDTH;
+      const scaleY = cssHeight / GAME_CONFIG.CANVAS_HEIGHT;
       const scale = Math.min(scaleX, scaleY);
 
       const scaledWidth = GAME_CONFIG.CANVAS_WIDTH * scale;
       const scaledHeight = GAME_CONFIG.CANVAS_HEIGHT * scale;
-      const offsetX = (width - scaledWidth) / 2;
-      const offsetY = (height - scaledHeight) / 2;
-
-      // Clear canvas
-      ctx.fillStyle = COLORS.BACKGROUND;
-      ctx.fillRect(0, 0, width, height);
+      const offsetX = (cssWidth - scaledWidth) / 2;
+      const offsetY = (cssHeight - scaledHeight) / 2;
 
       ctx.save();
-      ctx.translate(offsetX, offsetY);
-      ctx.scale(scale, scale);
+      ctx.translate(offsetX * dpr, offsetY * dpr);
+      ctx.scale(scale * dpr, scale * dpr);
 
-      // Pulse effect
+      // Pulse glow background
       const pulseGlow = Math.floor(pulse * 20);
       ctx.fillStyle = `rgb(${pulseGlow}, ${Math.floor(pulseGlow * 0.4)}, ${Math.floor(pulseGlow * 0.5)})`;
       ctx.fillRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
@@ -89,30 +89,18 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
         ctx.shadowBlur = 60;
         ctx.shadowColor = COLORS.PULSE_COLOR;
         ctx.beginPath();
-        ctx.arc(
-          GAME_CONFIG.CENTER_X,
-          GAME_CONFIG.CENTER_Y,
-          GAME_CONFIG.ORBIT_RADIUS + 40,
-          0,
-          Math.PI * 2
-        );
+        ctx.arc(GAME_CONFIG.CENTER_X, GAME_CONFIG.CENTER_Y, GAME_CONFIG.ORBIT_RADIUS + 40, 0, Math.PI * 2);
         ctx.strokeStyle = COLORS.PULSE_COLOR;
         ctx.lineWidth = 3;
         ctx.stroke();
         ctx.shadowBlur = 0;
       }
 
-      // Orbit circle
+      // Orbit ring
       ctx.strokeStyle = '#3f3f46';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(
-        GAME_CONFIG.CENTER_X,
-        GAME_CONFIG.CENTER_Y,
-        GAME_CONFIG.ORBIT_RADIUS,
-        0,
-        Math.PI * 2
-      );
+      ctx.arc(GAME_CONFIG.CENTER_X, GAME_CONFIG.CENTER_Y, GAME_CONFIG.ORBIT_RADIUS, 0, Math.PI * 2);
       ctx.stroke();
 
       // Center dot
@@ -121,13 +109,13 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
       ctx.arc(GAME_CONFIG.CENTER_X, GAME_CONFIG.CENTER_Y, 8, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw obstacles with glow effect for difficulty waves
+      // Obstacles
       state.obstacles.forEach((obstacle) => {
         if (state.difficultyWave > 3) {
           ctx.shadowBlur = 20;
           ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
         }
-        
+
         ctx.fillStyle = COLORS.OBSTACLE;
         ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
@@ -137,7 +125,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
         ctx.shadowBlur = 0;
       });
 
-      // Draw power-ups
+      // Power-ups
       state.powerUps.forEach((powerUp) => {
         const puX = GAME_CONFIG.CENTER_X + Math.cos(powerUp.angle) * GAME_CONFIG.ORBIT_RADIUS * 1.5;
         const puY = GAME_CONFIG.CENTER_Y + Math.sin(powerUp.angle) * GAME_CONFIG.ORBIT_RADIUS * 1.5;
@@ -163,7 +151,6 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // Draw type indicator
         ctx.fillStyle = '#000000';
         ctx.font = 'bold 10px Arial';
         ctx.textAlign = 'center';
@@ -172,7 +159,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
         ctx.fillText(typeChar, puX, puY);
       });
 
-      // Draw particles
+      // Particles
       state.particles.forEach((particle) => {
         ctx.globalAlpha = particle.life;
         ctx.fillStyle = particle.color;
@@ -182,24 +169,18 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
         ctx.globalAlpha = 1;
       });
 
-      // Draw shield indicator
+      // Shield ring
       if (state.activeShield) {
         ctx.globalAlpha = 0.3;
         ctx.strokeStyle = '#FFD700';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(
-          GAME_CONFIG.CENTER_X,
-          GAME_CONFIG.CENTER_Y,
-          GAME_CONFIG.ORBIT_RADIUS + 50,
-          0,
-          Math.PI * 2
-        );
+        ctx.arc(GAME_CONFIG.CENTER_X, GAME_CONFIG.CENTER_Y, GAME_CONFIG.ORBIT_RADIUS + 50, 0, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
 
-      // Draw circles
+      // Player circles
       state.circles.forEach((circle) => {
         const x = GAME_CONFIG.CENTER_X + Math.cos(circle.angle) * GAME_CONFIG.ORBIT_RADIUS;
         const y = GAME_CONFIG.CENTER_Y + Math.sin(circle.angle) * GAME_CONFIG.ORBIT_RADIUS;
@@ -221,13 +202,9 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
 
       ctx.restore();
 
-      // Continue animation loop
-      if (state.isPlaying) {
-        animationFrameRef.current = requestAnimationFrame(render);
-      }
+      animationFrameRef.current = requestAnimationFrame(render);
     };
 
-    // Start animation loop
     animationFrameRef.current = requestAnimationFrame(render);
 
     return () => {
@@ -241,9 +218,10 @@ const GameCanvas: FC<GameCanvasProps> = ({ gameState, pulseIntensity }) => {
     <div ref={containerRef} className="w-full h-full">
       <canvas
         ref={canvasRef}
-        className="w-full h-full"
+        className="w-full h-full block"
         style={{
           imageRendering: 'crisp-edges',
+          touchAction: 'none',
         }}
       />
     </div>

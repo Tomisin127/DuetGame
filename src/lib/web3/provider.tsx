@@ -29,7 +29,7 @@ interface Web3ProviderProps {
   children: ReactNode;
 }
 
-export function Web3Provider({ children }: Web3ProviderProps): JSX.Element {
+export function Web3Provider({ children }: Web3ProviderProps) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
