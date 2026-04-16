@@ -1,103 +1,11 @@
-[00:00:00.820] Server  LOG     
-[00:00:00.820] Server  LOG        We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
-[00:00:00.820] Server  LOG        The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
-
-[00:00:00.820] Server  LOG        	- target was set to ES2017 (For top-level `await`. Note: Next.js only polyfills for the esmodules target.)
-[00:00:00.820] Server  LOG        	- include was updated to add '.next/dev/types/**/*.ts'
-[00:00:00.820] Server  LOG     
-[00:00:00.820] Server  LOG        The following mandatory changes were made to your tsconfig.json:
-
-[00:00:00.820] Server  LOG        	- jsx was set to react-jsx (next.js uses the React automatic runtime)
-[00:00:00.820] Server  LOG     
-[00:00:00.832] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-[00:00:00.910] Server  LOG      ✓ Ready in 645ms
-[00:00:05.605] Server  LOG      ○ Compiling / ...
-[00:00:14.928] Browser LOG     [v0] No pending calls ID, skipping status check
-[00:00:14.928] Browser LOG     [v0] gameStatus changed to: menu
-[00:00:14.928] Browser LOG     [v0] gameStateRef.current.isPlaying: false
-[00:00:14.928] Browser LOG     [v0] Rendering game with status: menu
-[00:00:14.928] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
-[00:00:14.928] Browser LOG     [v0] No pending calls ID, skipping status check
-[00:00:14.928] Browser LOG     [v0] gameStatus changed to: menu
-[00:00:14.928] Browser LOG     [v0] gameStateRef.current.isPlaying: false
-[00:00:14.928] Browser LOG     [v0] Rendering game with status: menu
-[00:00:14.928] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
-[00:00:44.700] Server  LOG      ✓ Compiled in 18ms
-[00:00:45.179] Browser LOG     [v0] No pending calls ID, skipping status check
-[00:00:45.179] Browser LOG     [v0] gameStatus changed to: menu
-[00:00:45.179] Browser LOG     [v0] gameStateRef.current.isPlaying: false
-[00:00:45.179] Browser LOG     [v0] Rendering game with status: menu
-[00:00:45.179] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
-[00:00:56.066] Server  LOG      ✓ Compiled in 70ms
-[00:00:57.338] Browser LOG     [v0] No pending calls ID, skipping status check
-[00:00:57.338] Browser LOG     [v0] gameStatus changed to: menu
-[00:00:57.338] Browser LOG     [v0] gameStateRef.current.isPlaying: false
-[00:00:57.338] Browser LOG     [v0] Rendering game with status: menu
-[00:00:57.338] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
-[00:01:33.290] Server  LOG        Reload env: .env.development.local
-[00:01:37.506] Browser LOG     [v0] No pending calls ID, skipping status check
-[00:01:37.506] Browser LOG     [v0] gameStatus changed to: menu
-[00:01:37.506] Browser LOG     [v0] gameStateRef.current.isPlaying: false
-[00:01:37.506] Browser LOG     [v0] Rendering game with status: menu
-[00:01:37.506] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
-[00:01:37.506] Browser LOG     [v0] No pending calls ID, skipping status check
-[00:01:37.506] Browser LOG     [v0] gameStatus changed to: menu
-[00:01:37.506] Browser LOG     [v0] gameStateRef.current.isPlaying: false
-[00:01:37.506] Browser LOG     [v0] Rendering game with status: menu
-[00:01:37.506] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
-[00:02:13.373] Server  LOG      ✓ Compiled in 4ms
-[00:02:13.845] Browser LOG     [v0] No pending calls ID, skipping status check
-[00:02:13.845] Browser LOG     [v0] gameStatus changed to: menu
-[00:02:13.845] Browser LOG     [v0] gameStateRef.current.isPlaying: false
-[00:02:13.845] Browser LOG     [v0] Rendering game with status: menu
-[00:02:13.845] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
-[00:02:31.637] Server  LOG        Reload env: .env.development.local
-[00:02:35.395] Browser LOG     [v0] No pending calls ID, skipping status check
-[00:02:35.395] Browser LOG     [v0] gameStatus changed to: menu
-[00:02:35.395] Browser LOG     [v0] gameStateRef.current.isPlaying: false
-[00:02:35.395] Browser LOG     [v0] Rendering game with status: menu
-[00:02:35.395] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
-[00:02:35.395] Browser LOG     [v0] No pending calls ID, skipping status check
-[00:02:35.395] Browser LOG     [v0] gameStatus changed to: menu
-[00:02:35.395] Browser LOG     [v0] gameStateRef.current.isPlaying: false
-[00:02:35.395] Browser LOG     [v0] Rendering game with status: menu
-[00:02:35.395] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
-[00:03:46.216] Server  LOG      ✓ Compiled in 21ms
-[00:03:46.725] Browser ERROR   ./src/components/game/DuetGame.tsx:8:1
-Export DATA_SUFFIX doesn't exist in target module
-   6 | import { useWalletClient } from 'wagmi';
-   7 | import type { GameState, GameStatus } from '@/types/game';
->  8 | import { GAME_CONFIG, COLORS, DATA_SUFFIX } from '@/lib/game/constants';
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   9 | import {
-  10 |   checkCollision,
-  11 |   spawnObstacle,
-
-The export DATA_SUFFIX was not found in module [project]/src/lib/game/constants.ts [app-client] (ecmascript).
-Did you mean to import GAME_CONFIG?
-All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
-
-Import trace:
-  Client Component Browser:
-    ./src/components/game/DuetGame.tsx [Client Component Browser]
-    ./src/components/game/ClientApp.tsx [Client Component Browser]
-    ./src/components/game/ClientApp.tsx [Server Component]
-    ./src/app/page.tsx [Server Component]
-[00:04:01.653] Server  LOG      ✓ Compiled in 56ms
-[00:04:02.827] Browser ERROR   Cannot update a component (`%s`) while rendering a different component (`%s`). To locate the bad setState() call inside `%s`, follow the stack trace as described in https://react.dev/link/setstate-in-render DuetGame Hydrate Hydrate
-[00:04:03.002] Browser LOG     [v0] No pending calls ID, skipping status check
-[00:04:03.002] Browser LOG     [v0] gameStatus changed to: menu
-[00:04:03.002] Browser LOG     [v0] gameStateRef.current.isPlaying: false
-[00:04:03.002] Browser LOG     [v0] Rendering game with status: menu
-[00:04:03.002] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
-[00:04:14.459] Server  LOG      ✓ Compiled in 226ms
-[00:04:17.496] Browser LOG     [v0] No pending calls ID, skipping status check
-[00:04:17.496] Browser LOG     [v0] gameStatus changed to: menu
-[00:04:17.496] Browser LOG     [v0] gameStateRef.current.isPlaying: false
-[00:04:17.496] Browser LOG     [v0] Rendering game with status: menu
-[00:04:17.496] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
-[00:04:17.496] Browser LOG     [v0] No pending calls ID, skipping status check
-[00:04:17.496] Browser LOG     [v0] gameStatus changed to: menu
-[00:04:17.496] Browser LOG     [v0] gameStateRef.current.isPlaying: false
-[00:04:17.496] Browser LOG     [v0] Rendering game with status: menu
-[00:04:17.496] Browser LOG     [v0] Game loop conditions not met - cancelling animation frame
+[00:00:01.264] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:01.364] Server  LOG      ✓ Ready in 999ms
+[00:00:07.660] Server  LOG      ○ Compiling / ...
+[00:42:03.511] Browser ERROR   Analytics SDK: {} {"context":"AnalyticsSDKApiError"}
+[00:50:10.671] Server  LOG      ✓ Compiled in 250ms
+[00:50:17.502] Server  LOG      ✓ Compiled in 5ms
+[00:50:29.066] Server  LOG      ✓ Compiled in 84ms
+[00:50:35.099] Server  LOG      ✓ Compiled in 46ms
+[00:51:28.766] Server  LOG      ✓ Compiled in 33ms
+[00:52:08.936] Server  LOG      ✓ Compiled in 50ms
+[00:52:15.475] Server  LOG      ✓ Compiled in 53ms

@@ -27,16 +27,16 @@ export const DATA_SUFFIX = '0x62635f393238656c397662000e008021802180218021802180
 
 export const COLORS = {
   BACKGROUND: '#050a0f',
-  CIRCLE_1: '#38bdf8', // Sky blue
-  CIRCLE_2: '#2dd4bf', // Teal/Cyan
+  CIRCLE_1: '#ef4444', // Red
+  CIRCLE_2: '#3b82f6', // Blue
   OBSTACLE: '#ffffff',
   OBSTACLE_ACCENT: 'rgba(255, 255, 255, 0.8)',
   HUD_TEXT: '#ffffff',
   HUD_SECONDARY: '#94a3b8',
-  PULSE_COLOR: '#2dd4bf20',
+  PULSE_COLOR: '#3b82f620',
   ORBIT_COLOR: '#1e293b',
-  GLOW_PRIMARY: '#2dd4bf',
-  GLOW_SECONDARY: '#38bdf8',
+  GLOW_PRIMARY: '#ef4444',
+  GLOW_SECONDARY: '#3b82f6',
 } as const;
 
 export const AUDIO_TRACKS = [
