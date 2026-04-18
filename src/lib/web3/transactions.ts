@@ -1,5 +1,6 @@
-import { formatEther, parseEther } from 'viem';
+import { parseEther } from 'viem';
 import type { UseSendCallsReturnType } from 'wagmi';
+import { DATA_SUFFIX } from '@/lib/web3/provider';
 
 export interface TransactionConfig {
   entryFeeUsd: number;
@@ -17,18 +18,21 @@ export async function sendGameTransaction(
     const ethAmount = entryFeeUsd / ethPrice;
     const valueInWei = parseEther(ethAmount.toString());
 
-    const callsPromise = sendCalls({
+    const result = await sendCalls({
       calls: [
         {
-          account: userAddress,
-          to: recipientAddress,
+          to: recipientAddress as `0x${string}`,
           value: valueInWei,
-          data: undefined,
         },
       ],
+      capabilities: {
+        dataSuffix: {
+          value: DATA_SUFFIX,
+          optional: true,
+        },
+      },
     });
 
-    const result = await callsPromise;
     return result as string;
   } catch (error) {
     console.error('[v0] Transaction error:', error);

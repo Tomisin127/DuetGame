@@ -1,14 +1,29 @@
-[00:00:01.264] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-[00:00:01.364] Server  LOG      ✓ Ready in 999ms
-[00:00:07.660] Server  LOG      ○ Compiling / ...
-[00:42:03.511] Browser ERROR   Analytics SDK: {} {"context":"AnalyticsSDKApiError"}
-[00:50:10.671] Server  LOG      ✓ Compiled in 250ms
-[00:50:17.502] Server  LOG      ✓ Compiled in 5ms
-[00:50:29.066] Server  LOG      ✓ Compiled in 84ms
-[00:50:35.099] Server  LOG      ✓ Compiled in 46ms
-[00:51:28.766] Server  LOG      ✓ Compiled in 33ms
-[00:52:08.936] Server  LOG      ✓ Compiled in 50ms
-[00:52:15.475] Server  LOG      ✓ Compiled in 53ms
-[01:07:59.548] Server  LOG      ✓ Compiled in 34ms
-[01:08:05.268] Server  LOG      ✓ Compiled in 177ms
-[01:08:39.057] Server  LOG      ✓ Compiled in 34ms
+[00:00:00.904] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:00.980] Server  LOG      ✓ Ready in 627ms
+[00:00:08.874] Server  LOG      ○ Compiling / ...
+[00:00:46.460] Browser ERROR   Analytics SDK: {} {"context":"AnalyticsSDKApiError"}
+[00:21:07.622] Browser ERROR   Analytics SDK: {} {"context":"AnalyticsSDKApiError"}
+[00:21:23.449] Server  LOG      ✓ Compiled in 252ms
+[00:21:44.861] Server  LOG      ✓ Compiled in 27ms
+[00:21:45.550] Browser ERROR   ./src/components/game/DuetGame.tsx:7:1
+Export DATA_SUFFIX doesn't exist in target module
+   5 | import { formatEther, parseEther } from 'viem';
+   6 | import type { GameState, GameStatus } from '@/types/game';
+>  7 | import { GAME_CONFIG, COLORS, BUILDER_CODE, DATA_SUFFIX } from '@/lib/game/constants';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import {
+   9 |   checkCollision,
+  10 |   spawnObstacle,
+
+The export DATA_SUFFIX was not found in module [project]/src/lib/game/constants.ts [app-client] (ecmascript).
+Did you mean to import GAME_CONFIG?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import trace:
+  Client Component Browser:
+    ./src/components/game/DuetGame.tsx [Client Component Browser]
+    ./src/components/game/ClientApp.tsx [Client Component Browser]
+    ./src/components/game/ClientApp.tsx [Server Component]
+    ./src/app/page.tsx [Server Component]
+[00:22:02.549] Browser ERROR   Analytics SDK: {} {"context":"AnalyticsSDKApiError"}
+[00:22:02.587] Server  LOG      ✓ Compiled in 290ms

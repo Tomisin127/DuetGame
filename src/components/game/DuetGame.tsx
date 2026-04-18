@@ -4,7 +4,8 @@ import { useAccount, useConnect, useDisconnect, useSwitchChain, useBalance, useS
 import { base } from 'wagmi/chains';
 import { formatEther, parseEther } from 'viem';
 import type { GameState, GameStatus } from '@/types/game';
-import { GAME_CONFIG, COLORS, BUILDER_CODE, DATA_SUFFIX } from '@/lib/game/constants';
+import { GAME_CONFIG, COLORS, BUILDER_CODE } from '@/lib/game/constants';
+import { DATA_SUFFIX } from '@/lib/web3/provider';
 import {
   checkCollision,
   spawnObstacle,
