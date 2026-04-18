@@ -3,6 +3,8 @@
 "use strict";
 
 __turbopack_context__.s([
+    "DATA_SUFFIX",
+    ()=>DATA_SUFFIX,
     "Web3Provider",
     ()=>Web3Provider
 ]);
@@ -15,12 +17,19 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f40$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f40$wagmi$2b$connectors$40$6$2e$2$2e$0_$40$tanstack$2b$react$2d$query$40$5$2e$95$2e$0_react$40$19$2e$2$2e$4_$5f40$types$2b$react$40$19$2e$2$2e$14_eeb949d96ce4bee23b06436459b024e5$2f$node_modules$2f40$wagmi$2f$connectors$2f$dist$2f$esm$2f$coinbaseWallet$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/@wagmi+connectors@6.2.0_@tanstack+react-query@5.95.0_react@19.2.4__@types+react@19.2.14_eeb949d96ce4bee23b06436459b024e5/node_modules/@wagmi/connectors/dist/esm/coinbaseWallet.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f40$tanstack$2b$query$2d$core$40$5$2e$95$2e$0$2f$node_modules$2f40$tanstack$2f$query$2d$core$2f$build$2f$modern$2f$queryClient$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/@tanstack+query-core@5.95.0/node_modules/@tanstack/query-core/build/modern/queryClient.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f40$tanstack$2b$react$2d$query$40$5$2e$95$2e$0_react$40$19$2e$2$2e$4$2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$QueryClientProvider$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/@tanstack+react-query@5.95.0_react@19.2.4/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$ox$40$0$2e$12$2e$4_typescript$40$5$2e$7$2e$3_zod$40$3$2e$25$2e$76$2f$node_modules$2f$ox$2f$_esm$2f$erc8021$2f$Attribution$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__Attribution$3e$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/ox@0.12.4_typescript@5.7.3_zod@3.25.76/node_modules/ox/_esm/erc8021/Attribution.js [app-client] (ecmascript) <export * as Attribution>");
 'use client';
 ;
 ;
 ;
 ;
 ;
+;
+const DATA_SUFFIX = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$ox$40$0$2e$12$2e$4_typescript$40$5$2e$7$2e$3_zod$40$3$2e$25$2e$76$2f$node_modules$2f$ox$2f$_esm$2f$erc8021$2f$Attribution$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__Attribution$3e$__["Attribution"].toDataSuffix({
+    codes: [
+        'bc_928el9vb'
+    ]
+});
 // This entire module is loaded only on the client via dynamic({ ssr: false }) in layout.tsx.
 // serverExternalPackages in next.config.mjs further ensures wagmi and its WalletConnect
 // transitive deps are never bundled into the server build.
@@ -37,7 +46,8 @@ const config = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$
     ],
     transports: {
         [__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$viem$40$2$2e$47$2e$6_bufferutil$40$4$2e$1$2e$0_typescript$40$5$2e$7$2e$3_utf$2d$8$2d$validate$40$6$2e$0$2e$6_zod$40$3$2e$25$2e$76$2f$node_modules$2f$viem$2f$_esm$2f$chains$2f$definitions$2f$base$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["base"].id]: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$viem$40$2$2e$47$2e$6_bufferutil$40$4$2e$1$2e$0_typescript$40$5$2e$7$2e$3_utf$2d$8$2d$validate$40$6$2e$0$2e$6_zod$40$3$2e$25$2e$76$2f$node_modules$2f$viem$2f$_esm$2f$clients$2f$transports$2f$http$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["http"])('https://mainnet.base.org')
-    }
+    },
+    dataSuffix: DATA_SUFFIX
 });
 const queryClient = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f40$tanstack$2b$query$2d$core$40$5$2e$95$2e$0$2f$node_modules$2f40$tanstack$2f$query$2d$core$2f$build$2f$modern$2f$queryClient$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["QueryClient"]();
 function Web3Provider({ children }) {
@@ -48,12 +58,12 @@ function Web3Provider({ children }) {
             children: children
         }, void 0, false, {
             fileName: "[project]/src/lib/web3/provider.tsx",
-            lineNumber: 35,
+            lineNumber: 43,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/lib/web3/provider.tsx",
-        lineNumber: 34,
+        lineNumber: 42,
         columnNumber: 5
     }, this);
 }
