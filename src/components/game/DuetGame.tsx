@@ -24,6 +24,7 @@ import AudioManager from '@/components/game/AudioManager';
 import FullscreenButton from '@/components/game/FullscreenButton';
 import StyledButton from '@/components/game/StyledButton';
 import WalletConnectButton from '@/components/WalletConnectButton';
+import SwapModal from '@/components/game/SwapModal';
 
 const MINIMUM_USD_REQUIRED = 0.000001;
 const GAME_FEE_RECIPIENT = '0xEA549e458e77Fd93bf330e5EAEf730c50d8F5249';
@@ -48,6 +49,7 @@ export default function DuetGame() {
 
   const [ethPrice, setEthPrice] = useState<number>(2500);
   const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
+  const [swapOpen, setSwapOpen] = useState<boolean>(false);
 
   const gameStateRef = useRef<GameState>({
     isPlaying: false,
@@ -473,6 +475,8 @@ export default function DuetGame() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-black relative overflow-hidden">
       <AudioManager isPlaying={gameStatus === 'playing' && audioEnabled} onBeat={handleBeat} />
 
+      <SwapModal open={swapOpen} onClose={() => setSwapOpen(false)} />
+
       {isConnected && gameStatus !== 'playing' && (
         <button
           onClick={() => disconnect()}
@@ -521,14 +525,30 @@ export default function DuetGame() {
                 </p>
               </div>
             ) : (
-              <StyledButton
-                onClick={startGame}
-                disabled={isCheckingBalance || isSigningTx}
-                variant="primary"
-                size="xl"
-              >
-                {isSigningTx ? 'Sign in wallet...' : isCheckingBalance ? 'Checking balance...' : 'Start Game'}
-              </StyledButton>
+              <div className="flex flex-col items-center gap-3">
+                <StyledButton
+                  onClick={startGame}
+                  disabled={isCheckingBalance || isSigningTx}
+                  variant="primary"
+                  size="xl"
+                >
+                  {isSigningTx ? 'Sign in wallet...' : isCheckingBalance ? 'Checking balance...' : 'Start Game'}
+                </StyledButton>
+
+                <button
+                  onClick={() => setSwapOpen(true)}
+                  className="group flex items-center gap-3 px-6 py-3 bg-black border border-white/40 hover:border-white hover:bg-white/5 transition-smooth"
+                >
+                  <span className="flex items-center gap-1 text-white text-xs font-medium uppercase tracking-widest">
+                    <span className="text-gray-500 group-hover:text-white transition-smooth">⇅</span>
+                    Swap DUET
+                  </span>
+                  <span className="h-3 w-px bg-white/30" />
+                  <span className="text-[10px] font-light text-gray-500 uppercase tracking-widest">
+                    Base · Uniswap
+                  </span>
+                </button>
+              </div>
             )}
 
             <div className="max-w-md border border-gray-800 pt-6 mt-2 px-4">
