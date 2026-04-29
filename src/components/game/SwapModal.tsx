@@ -173,7 +173,7 @@ async function getBestQuote(
   tokenOut: Address,
   amountIn: bigint
 ): Promise<QuoteResult | null> {
-  if (amountIn <= 0n) return null;
+  if (amountIn <= BigInt(0)) return null;
 
   const results = await Promise.allSettled(
     POOL_FEES.map(async (fee) => {
@@ -187,7 +187,7 @@ async function getBestQuote(
             tokenOut,
             amountIn,
             fee,
-            sqrtPriceLimitX96: 0n,
+            sqrtPriceLimitX96: BigInt(0),
           },
         ],
       });
@@ -198,7 +198,7 @@ async function getBestQuote(
 
   let best: QuoteResult | null = null;
   for (const r of results) {
-    if (r.status === 'fulfilled' && r.value.amountOut > 0n) {
+    if (r.status === 'fulfilled' && r.value.amountOut > BigInt(0)) {
       if (!best || r.value.amountOut > best.amountOut) best = r.value;
     }
   }
@@ -304,28 +304,28 @@ export default function SwapModal({ open, onClose }: SwapModalProps) {
   }, [amountIn, tokenIn, tokenOut, decimalsIn]);
 
   // ─── Derived state ────────────────────────────────────────────────────────
-  const balanceIn = mode === 'buy' ? ethBal?.value ?? 0n : (duetBal as bigint | undefined) ?? 0n;
-  const balanceOut = mode === 'buy' ? (duetBal as bigint | undefined) ?? 0n : ethBal?.value ?? 0n;
+  const balanceIn = mode === 'buy' ? ethBal?.value ?? BigInt(0) : (duetBal as bigint | undefined) ?? BigInt(0);
+  const balanceOut = mode === 'buy' ? (duetBal as bigint | undefined) ?? BigInt(0) : ethBal?.value ?? BigInt(0);
 
   const amountInWei = useMemo(() => {
-    if (!amountIn || Number(amountIn) <= 0) return 0n;
+    if (!amountIn || Number(amountIn) <= 0) return BigInt(0);
     try {
       return parseUnits(amountIn, decimalsIn);
     } catch {
-      return 0n;
+      return BigInt(0);
     }
   }, [amountIn, decimalsIn]);
 
-  const insufficientBalance = amountInWei > 0n && amountInWei > balanceIn;
+  const insufficientBalance = amountInWei > BigInt(0) && amountInWei > balanceIn;
 
   const needsApproval =
     mode === 'sell' &&
-    amountInWei > 0n &&
-    ((duetAllowance as bigint | undefined) ?? 0n) < amountInWei;
+    amountInWei > BigInt(0) &&
+    ((duetAllowance as bigint | undefined) ?? BigInt(0)) < amountInWei;
 
   const minOut = useMemo(() => {
-    if (!quote) return 0n;
-    return (quote.amountOut * BigInt(100 - slippage)) / 100n;
+    if (!quote) return BigInt(0);
+    return (quote.amountOut * BigInt(100 - slippage)) / BigInt(100);
   }, [quote, slippage]);
 
   // ─── Actions ──────────────────────────────────────────────────────────────
@@ -342,7 +342,7 @@ export default function SwapModal({ open, onClose }: SwapModalProps) {
   const handleMax = () => {
     if (mode === 'buy') {
       // reserve ~10% for gas
-      const v = (balanceIn * 90n) / 100n;
+      const v = (balanceIn * BigInt(90)) / BigInt(100);
       setAmountIn(formatUnits(v, decimalsIn));
     } else {
       setAmountIn(formatUnits(balanceIn, decimalsIn));
@@ -386,7 +386,7 @@ export default function SwapModal({ open, onClose }: SwapModalProps) {
   };
 
   const handleSwap = async () => {
-    if (!address || !quote || amountInWei <= 0n) return;
+    if (!address || !quote || amountInWei <= BigInt(0)) return;
     try {
       setIsSwapping(true);
       setStatusMsg('Confirm swap in your wallet...');
@@ -408,7 +408,7 @@ export default function SwapModal({ open, onClose }: SwapModalProps) {
               recipient: address,
               amountIn: amountInWei,
               amountOutMinimum: minOut,
-              sqrtPriceLimitX96: 0n,
+              sqrtPriceLimitX96: BigInt(0),
             },
           ],
         });
@@ -435,7 +435,7 @@ export default function SwapModal({ open, onClose }: SwapModalProps) {
               recipient: SWAP_ROUTER_02, // keep WETH at the router
               amountIn: amountInWei,
               amountOutMinimum: minOut,
-              sqrtPriceLimitX96: 0n,
+              sqrtPriceLimitX96: BigInt(0),
             },
           ],
         });
@@ -561,7 +561,7 @@ export default function SwapModal({ open, onClose }: SwapModalProps) {
               </span>
               <button
                 onClick={handleMax}
-                disabled={!isConnected || balanceIn === 0n}
+                disabled={!isConnected || balanceIn === BigInt(0)}
                 className="text-[10px] font-medium text-white uppercase tracking-widest border border-white/40 px-2 py-0.5 hover:bg-white hover:text-black transition-smooth disabled:opacity-40"
               >
                 Max
